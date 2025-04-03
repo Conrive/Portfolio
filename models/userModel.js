@@ -3,11 +3,23 @@ const bcrypt = require('bcrypt');
 
 async function createUser(name, email, password, role = 'student') {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const stmt = db.prepare('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)');
-    stmt.run(name, email, hashedPassword, role, (err) => {
-        if (err) console.error('Ошибка при добавлении пользователя:', err.message);
+    return new Promise((resolve, reject) => {
+        db.run('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+            [name, email, hashedPassword, role],
+            function (err) {
+                if (err) reject(err);
+                else resolve(this.lastID);
+            });
     });
-    stmt.finalize();
 }
 
-module.exports = { createUser };
+async function findUserByEmail(email) {
+    return new Promise((resolve, reject) => {
+        db.get('SELECT * FROM users WHERE email = ?', [email], (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+        });
+    });
+}
+
+module.exports = { createUser, findUserByEmail };
