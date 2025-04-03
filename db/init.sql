@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS projects (
                                         user_id INTEGER NOT NULL,
                                         title TEXT NOT NULL,
                                         description TEXT,
-                                        repo_link TEXT,
+                                        link TEXT,
                                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
