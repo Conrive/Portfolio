@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактировать проект</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+<div class="max-w-md w-full bg-white p-6 rounded shadow-md">
+    <h2 class="text-2xl font-bold mb-4">Редактировать проект</h2>
+
+    <form action="/projects/edit/<%= project.id %>" method="POST" class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium">Название проекта:</label>
+            <input type="text" name="title" value="<%= project.title %>" class="w-full p-2 border rounded" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium">Описание:</label>
+            <textarea name="description" class="w-full p-2 border rounded"><%= project.description %></textarea>
+        </div>
+        <div>
+            <label class="block text-sm font-medium">Ссылка на проект:</label>
+            <input type="url" name="link" value="<%= project.link %>" class="w-full p-2 border rounded">
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Сохранить</button>
+    </form>
+
+    <a href="/profile" class="block text-center text-blue-500 mt-4">Назад в профиль</a>
+</div>
+</body>
+</html>

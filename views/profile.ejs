@@ -1,14 +1,55 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Профиль</title>
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100">
-<div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold">Привет, <%= user.name %>!</h1>
-    <a href="/logout" class="text-red-500">Выйти</a>
+<div class="max-w-4xl mx-auto p-6 bg-white rounded shadow-md mt-6">
+    <h1 class="text-3xl font-bold text-red-500">Привет, <%= user.name %>!</h1>
+    <a href="/logout"><p class="text-white">Выйти</p></a>
+    <!-- Шапка профиля -->
+    <div class="flex items-center space-x-4">
+        <img src="<%= user.avatar || '/img/default-avatar.png' %>"
+             class="w-24 h-24 rounded-full border-2 border-gray-300">
+        <div>
+            <h1 class="text-2xl font-bold"><%= user.name %></h1>
+            <p class="text-gray-500"><%= user.email %></p>
+            <a href="/profile/edit" class="text-blue-500">Редактировать профиль</a>
+        </div>
+    </div>
+
+    <!-- Список проектов -->
+    <div class="mt-6">
+        <h2 class="text-xl font-semibold">Мои проекты</h2>
+        <a href="/projects/add" class="bg-green-500 text-white px-4 py-2 rounded block w-max mt-2">Добавить проект</a>
+
+        <% if (projects.length > 0) { %>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <% projects.forEach(project => { %>
+                    <div class="p-4 border rounded shadow">
+                        <h3 class="text-lg font-semibold"><%= project.title %></h3>
+                        <p class="text-gray-600"><%= project.description %></p>
+                        <a href="<%= project.link %>" class="text-blue-500" target="_blank">Посмотреть</a>
+
+                        <!-- Кнопки -->
+                        <div class="mt-2 flex space-x-2">
+                            <a href="/projects/edit/<%= project.id %>"
+                               class="bg-yellow-500 text-white px-3 py-1 rounded">Редактировать</a>
+
+                            <form action="/projects/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?');">
+                                <button class="bg-red-500 text-white px-3 py-1 rounded">Удалить</button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+    <% } else { %>
+            <p class="text-gray-500 mt-2">Проектов пока нет.</p>
+        <% } %>
+    </div>
 </div>
 </body>
 </html>
