@@ -38,7 +38,7 @@
 
         <div>
             <label class="block text-sm font-medium">Аватар:</label>
-            <input type="file" name="avatar" class="w-full p-2 border rounded">
+            <input type="file" name="avatar" class="w-full p-2 border rounded" accept="image/png, image/jpeg, image/webp">
             <% if (user.avatar) { %>
                 <img src="<%= user.avatar %>" class="w-16 h-16 mt-2 rounded-full">
             <% } %>
@@ -46,7 +46,7 @@
 
         <div>
             <label class="block text-sm font-medium">Обложка профиля:</label>
-            <input type="file" name="cover" class="w-full p-2 border rounded">
+            <input type="file" name="cover" class="w-full p-2 border rounded" accept="image/png, image/jpeg, image/webp">
             <% if (user.cover) { %>
                 <img src="<%= user.cover %>" class="w-full h-32 mt-2 rounded">
             <% } %>

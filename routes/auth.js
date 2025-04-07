@@ -15,7 +15,17 @@ router.post('/login', async (req, res) => {
         return res.render('login', { error: 'Неверный email или пароль' });
     }
 
-    req.session.user = { id: user.id, name: user.name, role: user.role };
+    req.session.user = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        cover: user.cover,
+        bio: user.bio,
+        github: user.github,
+        telegram: user.telegram,
+        linkedin: user.linkedin,
+        role: user.role };
     res.redirect('/profile');
 });
 

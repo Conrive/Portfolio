@@ -8,50 +8,89 @@
 </head>
 <body class="bg-gray-100">
 <div class="max-w-4xl mx-auto p-6 bg-white rounded shadow-md mt-6">
-    <h1 class="text-3xl font-bold text-red-800">Привет, <%= user.name %>!</h1>
-    <a href="/logout"><p class="text-white">Выйти</p></a>
+
+    <a href="/logout"><p class="text-red-500">Выйти</p></a>
     <!-- Шапка профиля -->
-    <div class="flex items-center space-x-4">
-        <img src="<%= user.avatar || '/img/default-avatar.png' %>"
-             class="w-24 h-24 rounded-full border-2 border-gray-300">
-        <div>
-            <h1 class="text-2xl font-bold mb-4"><%= user.name %></h1>
-            <p class="text-gray-500"><%= user.email %></p>
-            <div class="text-right mb-4">
-                <a href="/profile/edit" class="bg-blue-500 text-white px-4 py-2 rounded">Редактировать профиль</a>
-            </div>
+    <div class="relative bg-white shadow">
+        <% if (user.cover) { %>
+            <img src="<%= user.cover %>" alt="Обложка" class="w-full h-48 object-cover rounded-b-md">
+        <% } else { %>
+            <div class="w-full h-48 bg-gradient-to-r from-blue-500 to-purple-500 rounded-b-md"></div>
+        <% } %>
+
+        <div class="absolute top-32 left-1/2 transform -translate-x-1/2 text-center">
+            <% if (user.avatar) { %>
+                <img src="<%= user.avatar %>" alt="Аватар" class="w-32 h-32 rounded-full border-4 border-white mx-auto shadow-lg">
+            <% } else { %>
+                <div class="w-32 h-32 bg-gray-300 rounded-full border-4 border-white mx-auto shadow-lg flex items-center justify-center text-2xl text-white">
+                    <%= user.name ? user.name[0] : '?' %>
+                </div>
+            <% } %>
+            <h1 class="text-2xl font-bold mt-2"><%= user.name %></h1>
+            <% if (user.bio) { %>
+                <p class="text-gray-600 text-sm mt-1 px-4"><%= user.bio %></p>
+            <% } %>
         </div>
     </div>
 
-    <!-- Список проектов -->
-    <div class="mt-6">
-        <h2 class="text-xl font-semibold">Мои проекты</h2>
-        <a href="/projects/add" class="bg-green-500 text-white px-4 py-2 rounded block w-max mt-2">Добавить проект</a>
+    <!-- Контент -->
+    <div class="max-w-4xl mx-auto mt-32 p-4">
+        <!-- Соцсети -->
+        <div class="flex justify-center space-x-4 mb-6">
+            <% if (user.github) { %>
+                <a href="<%= user.github %>" target="_blank" class="text-gray-700 hover:text-black font-medium">GitHub</a>
+            <% } %>
+            <% if (user.telegram) { %>
+                <a href="<%= user.telegram %>" target="_blank" class="text-blue-500 hover:text-blue-700 font-medium">Telegram</a>
+            <% } %>
+            <% if (user.linkedin) { %>
+                <a href="<%= user.linkedin %>" target="_blank" class="text-blue-700 hover:text-blue-900 font-medium">LinkedIn</a>
+            <% } %>
+        </div>
 
-        <% if (projects.length > 0) { %>
-            <div class="grid grid-cols-2 gap-4 mt-4">
-                <% projects.forEach(project => { %>
-                    <div class="p-4 border rounded shadow">
-                        <h3 class="text-lg font-semibold"><%= project.title %></h3>
-                        <p class="text-gray-600"><%= project.description %></p>
-                        <a href="<%= project.link %>" class="text-blue-500" target="_blank">Посмотреть</a>
+        <!-- Кнопка редактирования -->
+        <div class="text-right">
+            <a href="/profile/edit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Редактировать информацию</a>
+        </div>
 
-                        <!-- Кнопки -->
-                        <div class="mt-2 flex space-x-2">
-                            <a href="/projects/edit/<%= project.id %>"
-                               class="bg-yellow-500 text-white px-3 py-1 rounded">Редактировать</a>
+        <!-- Список проектов -->
+        <div class="mt-6">
+            <h2 class="text-xl font-semibold">Мои проекты</h2>
+            <a href="/projects/add" class="bg-green-500 text-white px-4 py-2 rounded block w-max mt-2">Добавить проект</a>
 
-                            <form action="/projects/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?');">
-                                <button class="bg-red-500 text-white px-3 py-1 rounded">Удалить</button>
-                            </form>
+            <% if (projects.length > 0) { %>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <% projects.forEach(project => { %>
+                        <div class="p-4 border rounded shadow"
+                             style='background-image: url("<%= project.cover %>"); background-size: cover; background-position: center;'>
+                            <div class="absolute inset-0 bg-white bg-opacity-70 p-4 flex flex-col justify-between">
+                                <h3 class="text-lg font-semibold"><%= project.title %></h3>
+                                <p class="text-gray-600"><%= project.description %></p>
+                                <div class="flex items-center justify-between mt-4">
+                                    <a href="<%= project.link %>" class="text-blue-500" target="_blank">Cсылка</a>
+                                    <a href="#" class="text-sm text-gray-500 ml-4 hover:underline">Подробнее</a>
+                                </div>
+                                <!-- Кнопки -->
+                                <div class="mt-2 flex space-x-2">
+                                    <a href="/projects/edit/<%= project.id %>"
+                                       class="bg-yellow-500 text-white px-3 py-1 rounded">Редактировать</a>
+
+                                    <form action="/projects/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?');">
+                                        <button class="bg-red-500 text-white px-3 py-1 rounded">Удалить</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                <% }) %>
-            </div>
-    <% } else { %>
-            <p class="text-gray-500 mt-2">Проектов пока нет.</p>
-        <% } %>
+                    <% }) %>
+                </div>
+        <% } else { %>
+                <p class="text-gray-500 mt-2">Проектов пока нет.</p>
+            <% } %>
+        </div>
+
     </div>
+
+
 </div>
 </body>
 </html>
