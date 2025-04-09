@@ -8,8 +8,6 @@
 </head>
 <body class="bg-gray-100">
 <div class="max-w-4xl mx-auto p-6 bg-white rounded shadow-md mt-6">
-
-    <a href="/logout"><p class="text-red-500">Выйти</p></a>
     <!-- Шапка профиля -->
     <div class="relative bg-white shadow">
         <% if (user.cover) { %>
@@ -27,14 +25,16 @@
                 </div>
             <% } %>
             <h1 class="text-2xl font-bold mt-2"><%= user.name %></h1>
-            <% if (user.bio) { %>
-                <p class="text-gray-600 text-sm mt-1 px-4"><%= user.bio %></p>
-            <% } %>
         </div>
     </div>
 
     <!-- Контент -->
     <div class="max-w-4xl mx-auto mt-32 p-4">
+        <div class="mb-6" style="margin-top: -40px;">
+            <% if (user.bio) { %>
+                <p class="text-gray-600 text-sm mt-1 px-4"><%= user.bio %></p>
+            <% } %>
+        </div>
         <!-- Соцсети -->
         <div class="flex justify-center space-x-4 mb-6">
             <% if (user.github) { %>
@@ -63,7 +63,7 @@
                     <% projects.forEach(project => { %>
                         <div class="p-4 border rounded shadow"
                              style='background-image: url("<%= project.cover %>"); background-size: cover; background-position: center;'>
-                            <div class="absolute inset-0 bg-white bg-opacity-70 p-4 flex flex-col justify-between">
+                            <div class="inset-0 bg-white/85 p-4 flex flex-col justify-between">
                                 <h3 class="text-lg font-semibold"><%= project.title %></h3>
                                 <p class="text-gray-600"><%= project.description %></p>
                                 <div class="flex items-center justify-between mt-4">
@@ -83,13 +83,12 @@
                         </div>
                     <% }) %>
                 </div>
-        <% } else { %>
+            <% } else { %>
                 <p class="text-gray-500 mt-2">Проектов пока нет.</p>
             <% } %>
         </div>
 
     </div>
-
 
 </div>
 </body>
