@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title><%= project.title %></title>
+    <link href="/styles.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-900">
+<div class="max-w-4xl mx-auto p-6">
+    <% if (project.cover) { %>
+        <img src="<%= project.cover %>" alt="Обложка проекта" class="w-full rounded-lg mb-4 shadow">
+    <% } %>
+
+    <h1 class="text-3xl font-bold mb-4"><%= project.title %></h1>
+
+    <p class="mb-4 text-lg"><%= project.description %></p>
+
+    <% if (project.link) { %>
+        <a href="<%= project.link %>" class="text-blue-600 hover:underline" target="_blank">
+            Перейти к внешней ссылке
+        </a>
+    <% } %>
+</div>
+</body>
+</html>
