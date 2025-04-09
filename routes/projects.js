@@ -151,4 +151,18 @@ router.post('/delete/:id', (req, res) => {
     });
 });
 
+router.get('/project/:id/view', (req, res) => {
+    const projectId = req.params.id;
+
+    db.get('SELECT * FROM projects WHERE id = ?', [projectId], (err, project) => {
+        if (err || !project) {
+            console.log("Проект:", project);
+
+            return res.status(404).send("Проект не найден");
+        }
+
+        res.render('viewProject', { project });
+    });
+});
+
 module.exports = router;
