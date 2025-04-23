@@ -165,4 +165,32 @@ router.get('/project/:id/view', (req, res) => {
     });
 });
 
+router.get('/project/:id/edit-page', (req, res) => {
+    const projectId = req.params.id;
+
+    db.get('SELECT * FROM projects WHERE id = ?', [projectId], (err, project) => {
+        if (err || !project) {
+            return res.status(404).send("Проект не найден");
+        }
+
+        res.render('editProjectPage', {
+            project,
+            layout: project.layout ? JSON.parse(project.layout) : [] // если проект из БД, и у него есть layout
+        });
+    });
+});
+
+router.post('/project/:id/upload-image', upload.single('image'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'Файл не загружен' });
+
+    const imageUrl = `/uploads/${req.file.filename}`;
+    res.json({ imageUrl });
+});
+
+router.post('/delete-upload', (req, res) => {
+    const { path } = req.body;
+    deleteFileIfExists(path);
+    res.json({ success: true });
+});
+
 module.exports = router;

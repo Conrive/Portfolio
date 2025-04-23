@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Редактирование проекта</title>
+    <style>
+        .canvas-area {
+            min-height: 600px;
+            border: 2px dashed #ccc;
+        }
+    </style>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="flex h-screen overflow-hidden bg-gray-100">
+    <!-- Левая панель -->
+    <aside class="w-1/5 bg-white border-r p-4 space-y-2 flex flex-col items-start">
+        <h2 class="font-bold mb-2">Добавить элемент</h2>
+        <button onclick="addElement('text')" class="btn">Текст</button>
+        <button onclick="addElement('link')" class="btn">Ссылка</button>
+        <button onclick="addElement('divider')" class="btn">Разделитель</button>
+
+        <form id="uploadForm" class="mt-4" enctype="multipart/form-data">
+            <label class="block font-semibold mb-1">Загрузить изображение</label>
+            <input type="file" name="image" class="mb-2" />
+            <button type="submit" class="btn">Загрузить</button>
+        </form>
+
+        <div class="p-2 border-b font-bold">Древо объектов</div>
+        <ul id="objectTree" class="overflow-auto px-2 py-1 text-sm space-y-1 max-h-[300px]"></ul>
+
+
+
+
+        <button onclick="">Сохранить</button>
+    </aside>
+
+    <!-- Холст -->
+    <main class="flex-1 p-6 overflow-auto">
+        <div id="canvas" class="canvas-area bg-white p-4 rounded-lg space-y-4 relative min-h-[600px]"></div>
+    </main>
+
+    <!-- Правая панель -->
+    <aside class="w-1/5 bg-white border-l p-4" id="propertiesPanel">
+        <h2 class="font-bold mb-2">Свойства</h2>
+        <div id="propertiesContent">Выберите элемент</div>
+    </aside>
+
+    <script>
+
+    </script>
+
+    <script src="/editor.js"></script>
+</body>
+</html>
