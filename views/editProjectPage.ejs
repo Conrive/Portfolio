@@ -15,45 +15,45 @@
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body class="flex h-screen overflow-hidden bg-gray-100">
-    <!-- Левая панель -->
-    <aside class="w-1/5 bg-white border-r p-4 space-y-2 flex flex-col items-start">
-        <h2 class="font-bold mb-2">Добавить элемент</h2>
-        <button onclick="addElement('text')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Текст</button>
-        <button onclick="addElement('link')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Ссылка</button>
-        <button onclick="addElement('divider')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Разделитель</button>
-        <button onclick="addElement('polygon')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Многоугольник</button>
+<!-- Левая панель -->
+<aside class="w-1/5 bg-white border-r p-4 space-y-2 flex flex-col items-start">
+    <h2 class="font-bold mb-2">Добавить элемент</h2>
+    <button onclick="addElement('text')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Текст</button>
+    <button onclick="addElement('link')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Ссылка</button>
+    <button onclick="addElement('divider')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Разделитель</button>
+    <button onclick="addElement('polygon')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Многоугольник</button>
 
 
-        <form id="uploadForm" class="mt-4" enctype="multipart/form-data">
-            <label class="block font-semibold mb-1">Загрузить изображение</label>
-            <input type="file" name="image" class="mb-2" />
-            <button type="submit" class="btn">Загрузить</button>
-        </form>
+    <form id="uploadForm" class="mt-4" enctype="multipart/form-data">
+        <label class="block font-semibold mb-1">Загрузить изображение</label>
+        <input type="file" name="image" class="mb-2" />
+        <button type="submit" class="btn">Загрузить</button>
+    </form>
 
-        <div class="p-2 border-b font-bold">Древо объектов</div>
-        <ul id="objectTree" class="overflow-auto px-2 py-1 text-sm space-y-1 max-h-[300px]"></ul>
-
-
+    <div class="p-2 border-b font-bold">Древо объектов</div>
+    <ul id="objectTree" class="overflow-auto px-2 py-1 text-sm space-y-1 max-h-[300px]"></ul>
 
 
-        <button onclick="">Сохранить</button>
-    </aside>
 
-    <!-- Холст -->
-    <main class="flex-1 p-6 overflow-auto">
-        <div id="canvas" class="canvas-area bg-white p-4 rounded-lg space-y-4 relative min-h-[600px]"></div>
-    </main>
 
-    <!-- Правая панель -->
-    <aside class="w-1/5 bg-white border-l p-4" id="propertiesPanel">
-        <h2 class="font-bold mb-2">Свойства</h2>
-        <div id="propertiesContent">Выберите элемент</div>
-    </aside>
+    <button onclick="">Сохранить</button>
+</aside>
 
-    <script>
+<!-- Холст -->
+<main class="flex-1 p-6 overflow-auto">
+    <div id="canvas" class="canvas-area bg-white p-4 rounded-lg space-y-4 relative min-h-[600px]"></div>
+</main>
 
-    </script>
+<!-- Правая панель -->
+<aside class="w-1/5 bg-white border-l p-4" id="propertiesPanel">
+    <h2 class="font-bold mb-2">Свойства</h2>
+    <div id="propertiesContent">Выберите элемент</div>
+</aside>
 
-    <script src="/editor.js"></script>
+<script>
+
+</script>
+
+<script src="/editor.js"></script>
 </body>
 </html>

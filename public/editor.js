@@ -394,4 +394,3 @@ function updateObjectTree() {
         tree.appendChild(li);
     });
 }
-
