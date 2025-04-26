@@ -2,6 +2,10 @@ let selectedElement = null;
 let draggedElement = null;
 let offsetX = 0;
 let offsetY = 0;
+let offsetRight = 0;
+let offsetBottom = 0;
+const MAX_CANVAS_WIDTH = 2000;
+const MAX_CANVAS_HEIGHT = 1500;
 
 function rgb2hex(rgb) {
     const result = rgb.match(/\d+/g);
@@ -90,6 +94,7 @@ function addElement(type) {
     canvas.appendChild(newEl);
 
     updateObjectTree();
+    makeDraggable(newEl);
     selectElement(newEl);
 }
 
@@ -113,6 +118,50 @@ window.addEventListener('resize', () => {
     });
 });
 
+function makeDraggable(el) {
+    el.addEventListener('mousedown', (e) => {
+        draggedElement = el;
+        offsetX = e.clientX - el.getBoundingClientRect().left;
+        offsetY = e.clientY - el.getBoundingClientRect().top;
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', stopDrag);
+    });
+}
+
+function onDrag(e) {
+    if (!draggedElement) return;
+
+    const canvas = document.getElementById('canvas');
+    const canvasRect = canvas.getBoundingClientRect();
+
+    let left = e.clientX - canvasRect.left - offsetX;
+    let top = e.clientY - canvasRect.top - offsetY;
+
+    left = Math.max(0, left);
+    top = Math.max(0, top);
+
+    const canvasWidth = canvas.offsetWidth;
+    const canvasHeight = canvas.offsetHeight;
+    const elementWidth = draggedElement.offsetWidth;
+    const elementHeight = draggedElement.offsetHeight;
+
+    if (left + elementWidth > canvasWidth) {
+        left = canvasWidth - elementWidth;
+    }
+
+    if (top + elementHeight > canvasHeight) {
+        top = canvasHeight - elementHeight;
+    }
+
+    draggedElement.style.left = `${left}px`;
+    draggedElement.style.top = `${top}px`;
+}
+
+function stopDrag() {
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('mouseup', stopDrag);
+    draggedElement = null;
+}
 
 function selectElement(el) {
     selectedElement = el;
@@ -151,6 +200,11 @@ function selectElement(el) {
                 <option value="Tahoma">Tahoma</option>
             </select>
         
+        <label class="mt-2 block">Вращение</label>
+        <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
+               oninput="selectedElement.style.rotate = this.value + 'deg';
+               if(Number(this.value) > Number(this.max)) this.value = this.max;
+               if(Number(this.value) < Number(this.min)) this.value = this.min">
         `;
     } else  if (el.tagName === 'IMG') {
         propsPanel.innerHTML = `
@@ -161,7 +215,13 @@ function selectElement(el) {
         <label class="mt-2 block">Закругление</label>
         <input type="text" value="${el.style.borderRadius || '0px'}" 
                oninput="selectedElement.style.borderRadius = this.value">
-  `;
+  
+        <label class="mt-2 block">Вращение</label>
+        <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
+               oninput="selectedElement.style.rotate = this.value + 'deg';
+               if(Number(this.value) > Number(this.max)) this.value = this.max;
+               if(Number(this.value) < Number(this.min)) this.value = this.min">
+        `;
     } else if (el.tagName === 'POL' && el.dataset.sides) {
         propsPanel.innerHTML = `
             <label>Количество сторон</label>
@@ -179,6 +239,12 @@ function selectElement(el) {
             <label class="mt-2 block">Высота</label>
             <input type="text" value="${selectedElement.style.height}" 
                    oninput="selectedElement.style.height = this.value">
+            
+            <label class="mt-2 block">Вращение</label>
+            <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
+               oninput="selectedElement.style.rotate = this.value + 'deg';
+               if(Number(this.value) > Number(this.max)) this.value = this.max;
+               if(Number(this.value) < Number(this.min)) this.value = this.min">
         `;
     } else if (el.tagName === 'A') {
         // Ссылка
@@ -216,6 +282,12 @@ function selectElement(el) {
                 <option value="Courier New">Courier New</option>
                 <option value="Tahoma">Tahoma</option>
             </select>
+            
+            <label class="mt-2 block">Вращение</label>
+            <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
+               oninput="selectedElement.style.rotate = this.value + 'deg';
+               if(Number(this.value) > Number(this.max)) this.value = this.max;
+               if(Number(this.value) < Number(this.min)) this.value = this.min">
         `;
     } else {
         propsPanel.textContent = 'Нет настроек';
@@ -290,15 +362,23 @@ function updatePropsPanel(el) {
     if (el.id === 'canvas') {
         // Панель для фона
         propsPanel.innerHTML = `
-      <div class="mb-2">
-        <label class="block text-sm mb-1">Цвет фона</label>
-        <input type="color" id="backgroundColor" value="${rgb2hex(getComputedStyle(el).backgroundColor)}" class="w-full">
-      </div>
-      <div class="mb-2">
-        <label class="block text-sm mb-1">Фон-картинка (URL)</label>
-        <input type="text" id="backgroundImage" placeholder="https://example.com/image.png" class="w-full">
-      </div>
-    `;
+          <div class="mb-2">
+            <label class="block text-sm mb-1">Цвет фона</label>
+            <input type="color" id="backgroundColor" value="${rgb2hex(getComputedStyle(el).backgroundColor)}" class="w-full">
+          </div>
+          <div class="mb-2">
+            <label class="block text-sm mb-1">Фон-картинка (URL)</label>
+            <input type="text" id="backgroundImage" placeholder="https://example.com/image.png" class="w-full">
+          </div>
+          <div class="mb-2">
+            <label class="block text-sm mb-1">Ширина (px)</label>
+            <input type="number" id="canvasWidthInput" value="${canvasWidth}" class="w-full" />
+          </div>
+          <div class="mb-2">
+            <label class="block text-sm mb-1">Высота (px)</label>
+            <input type="number" id="canvasHeightInput" value="${canvasHeight}" class="w-full" />
+          </div>
+        `;
 
         document.getElementById('backgroundColor').addEventListener('input', (e) => {
             el.style.backgroundColor = e.target.value;
@@ -309,6 +389,14 @@ function updatePropsPanel(el) {
             el.style.backgroundImage = url ? `url(${url})` : '';
             el.style.backgroundSize = 'cover';
             el.style.backgroundPosition = 'center';
+        });
+
+        document.getElementById('canvasWidthInput').addEventListener('input', (e) => {
+            canvas.style.width = `${e.target.value}px`;
+        });
+
+        document.getElementById('canvasHeightInput').addEventListener('input', (e) => {
+            canvas.style.height = `${e.target.value}px`;
         });
 
     } else {
