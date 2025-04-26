@@ -3,6 +3,40 @@ let draggedElement = null;
 let offsetX = 0;
 let offsetY = 0;
 
+function rgb2hex(rgb) {
+    const result = rgb.match(/\d+/g);
+    return result ? "#" + result.map(x => (+x).toString(16).padStart(2, "0")).join("") : "#ffffff";
+}
+
+function toggleStyle(style) {
+    if (!selectedElement) return;
+    const current = selectedElement.style;
+
+    switch (style) {
+        case 'bold':
+            current.fontWeight = current.fontWeight === 'bold' ? 'normal' : 'bold';
+            break;
+        case 'italic':
+            current.fontStyle = current.fontStyle === 'italic' ? 'normal' : 'italic';
+            break;
+        case 'underline':
+            if (current.textDecoration.includes('underline')) {
+                current.textDecoration = current.textDecoration.replace('underline', '').trim();
+            } else {
+                current.textDecoration = (current.textDecoration + ' underline').trim();
+            }
+            break;
+        case 'line-through':
+            if (current.textDecoration.includes('line-through')) {
+                current.textDecoration = current.textDecoration.replace('line-through', '').trim();
+            } else {
+                current.textDecoration = (current.textDecoration + ' line-through').trim();
+            }
+            break;
+    }
+}
+
+
 function addElement(type) {
     const canvas = document.getElementById('canvas');
     let newEl;
@@ -21,14 +55,35 @@ function addElement(type) {
             newEl.style.width = '100%';
             break;
 
+        case 'link':
+            newEl = document.createElement('a');
+            newEl.href = '#';
+            newEl.textContent = 'Новая ссылка';
+            newEl.target = '_blank';
+            newEl.style.textDecoration = 'underline';
+            newEl.style.color = '#3498db';
+            newEl.style.fontSize = '18px';
+            newEl.style.cursor = 'pointer';
+            break;
+
+        case 'polygon':
+            newEl = document.createElement('pol');
+            newEl.style.width = '100px';
+            newEl.style.height = '100px';
+            newEl.style.backgroundColor = '#3498db';
+            newEl.style.clipPath = getPolygonClipPath(5); // стандарт 5 сторон
+            newEl.dataset.sides = 5;
+            newEl.style.cursor = 'pointer';
+            break;
+
         default:
             alert('Тип элемента не реализован');
             return;
     }
 
     newEl.style.position = 'absolute';
-    newEl.style.left = '120px';
-    newEl.style.top = '120px';
+    newEl.style.left = '0px';
+    newEl.style.top = '0px';
 
     newEl.classList.add('element');
     newEl.onclick = () => selectElement(newEl);
@@ -66,19 +121,102 @@ function selectElement(el) {
 
     if (el.tagName === 'DIV') {
         propsPanel.innerHTML = `
-      <label>Размер текста</label>
-      <input type="number" value="${parseInt(el.style.fontSize)}" oninput="selectedElement.style.fontSize = this.value + 'px'">
-    `;
+        <label>Размер текста</label>
+        <input type="number" value="${parseInt(el.style.fontSize)}" 
+               oninput="selectedElement.style.fontSize = this.value + 'px'">
+          
+        <label class="mt-2 block">Цвет фона</label>
+        <input type="color" value="${rgb2hex(getComputedStyle(el).backgroundColor)}" 
+               oninput="selectedElement.style.backgroundColor = this.value">
+        
+        <label class="mt-2 block">Цвет текста</label>
+        <input type="color" value="${rgb2hex(getComputedStyle(el).color)}" 
+               oninput="selectedElement.style.color = this.value">
+        
+         <label class="mt-2 block">Начертание текста</label>
+            <div class="flex gap-2 mt-1 flex-col items-start">
+                <button class="hover:bg-gray-100" onclick="toggleStyle('bold')">Жирный</button>
+                <button class="hover:bg-gray-100" onclick="toggleStyle('italic')">Курсив</button>
+                <button class="hover:bg-gray-100" onclick="toggleStyle('underline')">Подчеркнутый</button>
+                <button class="hover:bg-gray-100" onclick="toggleStyle('line-through')">Зачеркнутый</button>
+            </div>
+
+            <label class="mt-2 block">Шрифт</label>
+            <select onchange="selectedElement.style.fontFamily = this.value">
+                <option value="Arial">Arial</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Tahoma">Tahoma</option>
+            </select>
+        
+        `;
     } else  if (el.tagName === 'IMG') {
         propsPanel.innerHTML = `
-    <label>Ширина</label>
-    <input type="text" value="${el.style.width || '100%'}" 
-           oninput="selectedElement.style.width = this.value">
-
-    <label class="mt-2 block">Закругление</label>
-    <input type="text" value="${el.style.borderRadius || '0px'}" 
-           oninput="selectedElement.style.borderRadius = this.value">
+        <label>Ширина</label>
+        <input type="text" value="${el.style.width || '100%'}" 
+               oninput="selectedElement.style.width = this.value">
+    
+        <label class="mt-2 block">Закругление</label>
+        <input type="text" value="${el.style.borderRadius || '0px'}" 
+               oninput="selectedElement.style.borderRadius = this.value">
   `;
+    } else if (el.tagName === 'POL' && el.dataset.sides) {
+        propsPanel.innerHTML = `
+            <label>Количество сторон</label>
+            <input type="number" value="${el.dataset.sides}" min="3" max="12"
+                   oninput="updatePolygonSides(this.value)">
+            
+            <label class="mt-2 block">Цвет заливки</label>
+            <input type="color" value="${rgb2hex(getComputedStyle(el).backgroundColor)}" 
+                   oninput="selectedElement.style.backgroundColor = this.value">
+            
+            <label class="mt-2 block">Ширина</label>
+            <input type="text" value="${selectedElement.style.width}" 
+                   oninput="selectedElement.style.width = this.value">
+
+            <label class="mt-2 block">Высота</label>
+            <input type="text" value="${selectedElement.style.height}" 
+                   oninput="selectedElement.style.height = this.value">
+        `;
+    } else if (el.tagName === 'A') {
+        // Ссылка
+        propsPanel.innerHTML = `
+            <label>Текст ссылки</label>
+            <input type="text" value="${el.textContent}" 
+                   oninput="selectedElement.textContent = this.value">
+
+            <label class="mt-2 block">URL</label>
+            <input type="text" value="${el.href}" 
+                   oninput="selectedElement.href = this.value">
+
+            <label class="mt-2 block">Цвет текста</label>
+            <input type="color" value="${rgb2hex(getComputedStyle(el).color)}" 
+                   oninput="selectedElement.style.color = this.value">
+
+            <label class="mt-2 block">Размер текста</label>
+            <input type="number" value="${parseInt(el.style.fontSize)}" 
+                   oninput="selectedElement.style.fontSize = this.value + 'px'">
+
+            <label class="mt-2 block">Начертание текста</label>
+            <div class="flex gap-2 mt-1 flex-col">
+                <button class="hover:bg-gray-100" onclick="toggleStyle('bold')">Жирный</button>
+                <button class="hover:bg-gray-100" onclick="toggleStyle('italic')">Курсив</button>
+                <button class="hover:bg-gray-100" onclick="toggleStyle('underline')">Подчеркнутый</button>
+                <button class="hover:bg-gray-100" onclick="toggleStyle('line-through')">Зачеркнутый</button>
+            </div>
+
+            <label class="mt-2 block">Шрифт</label>
+            <select onchange="selectedElement.style.fontFamily = this.value">
+                <option value="Arial">Arial</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Tahoma">Tahoma</option>
+            </select>
+        `;
     } else {
         propsPanel.textContent = 'Нет настроек';
     }
@@ -104,6 +242,30 @@ document.getElementById('uploadForm').addEventListener('submit', async function 
     }
 });
 
+document.getElementById('canvas').addEventListener('click', (e) => {
+    if (e.target.id === 'canvas') {
+        selectedElement = document.getElementById('canvas');
+        updatePropsPanel(selectedElement);
+    }
+});
+
+function getPolygonClipPath(sides) {
+    const angle = 360 / sides;
+    let points = "";
+    for (let i = 0; i < sides; i++) {
+        const x = 50 + 50 * Math.cos((angle * i - 90) * Math.PI / 180);
+        const y = 50 + 50 * Math.sin((angle * i - 90) * Math.PI / 180);
+        points += `${x}% ${y}%, `;
+    }
+    return `polygon(${points.slice(0, -2)})`;
+}
+
+function updatePolygonSides(sides) {
+    sides = Math.max(3, Math.min(12, +sides));
+    selectedElement.dataset.sides = sides;
+    selectedElement.style.clipPath = getPolygonClipPath(sides);
+}
+
 function addImageElement(url) {
     const img = document.createElement('img');
     img.src = url;
@@ -125,7 +287,32 @@ function updatePropsPanel(el) {
     const left = (parseFloat(el.offsetLeft) / canvasWidth) * 100;
     const top = (parseFloat(el.offsetTop) / canvasHeight) * 100;
 
-    propsPanel.innerHTML += `
+    if (el.id === 'canvas') {
+        // Панель для фона
+        propsPanel.innerHTML = `
+      <div class="mb-2">
+        <label class="block text-sm mb-1">Цвет фона</label>
+        <input type="color" id="backgroundColor" value="${rgb2hex(getComputedStyle(el).backgroundColor)}" class="w-full">
+      </div>
+      <div class="mb-2">
+        <label class="block text-sm mb-1">Фон-картинка (URL)</label>
+        <input type="text" id="backgroundImage" placeholder="https://example.com/image.png" class="w-full">
+      </div>
+    `;
+
+        document.getElementById('backgroundColor').addEventListener('input', (e) => {
+            el.style.backgroundColor = e.target.value;
+        });
+
+        document.getElementById('backgroundImage').addEventListener('change', (e) => {
+            const url = e.target.value.trim();
+            el.style.backgroundImage = url ? `url(${url})` : '';
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'center';
+        });
+
+    } else {
+        propsPanel.innerHTML += `
     <label class="block mt-2">Позиция X (%):
       <input type="number" id="posX" value="${left.toFixed(1)}" class="border p-1 w-full" step="0.1" />
     </label>
@@ -136,9 +323,9 @@ function updatePropsPanel(el) {
       Удалить элемент
     </button>
   `;
-
-    document.getElementById('posX').addEventListener('input', updateElementPosition);
-    document.getElementById('posY').addEventListener('input', updateElementPosition);
+        document.getElementById('posX').addEventListener('input', updateElementPosition);
+        document.getElementById('posY').addEventListener('input', updateElementPosition);
+    }
 }
 
 function updateElementPosition() {

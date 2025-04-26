@@ -18,9 +18,11 @@
     <!-- Левая панель -->
     <aside class="w-1/5 bg-white border-r p-4 space-y-2 flex flex-col items-start">
         <h2 class="font-bold mb-2">Добавить элемент</h2>
-        <button onclick="addElement('text')" class="btn">Текст</button>
-        <button onclick="addElement('link')" class="btn">Ссылка</button>
-        <button onclick="addElement('divider')" class="btn">Разделитель</button>
+        <button onclick="addElement('text')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Текст</button>
+        <button onclick="addElement('link')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Ссылка</button>
+        <button onclick="addElement('divider')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Разделитель</button>
+        <button onclick="addElement('polygon')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Многоугольник</button>
+
 
         <form id="uploadForm" class="mt-4" enctype="multipart/form-data">
             <label class="block font-semibold mb-1">Загрузить изображение</label>
