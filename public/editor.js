@@ -40,7 +40,6 @@ function toggleStyle(style) {
     }
 }
 
-
 function addElement(type) {
     const canvas = document.getElementById('canvas');
     let newEl;
@@ -482,3 +481,212 @@ function updateObjectTree() {
         tree.appendChild(li);
     });
 }
+
+function collectCanvasData() {
+    const canvas = document.getElementById('canvas');
+    const canvasStyles = getComputedStyle(canvas);
+
+    const elements = Array.from(canvas.children).map(child => {
+        const style = getComputedStyle(child);
+        return {
+            tag: child.tagName.toLowerCase(),
+            text: child.textContent,
+            src: child.tagName === 'IMG' ? child.src : null,
+            href: child.tagName === 'A' ? child.href : null,
+            styles: {
+                left: child.style.left,
+                top: child.style.top,
+                width: child.style.width,
+                height: child.style.height,
+                color: style.color,
+                backgroundColor: style.backgroundColor,
+                fontSize: style.fontSize,
+                fontFamily: style.fontFamily,
+                fontWeight: style.fontWeight,
+                fontStyle: style.fontStyle,
+                textDecoration: style.textDecoration,
+                borderRadius: style.borderRadius,
+                clipPath: child.style.clipPath,
+                rotate: child.style.rotate,
+            },
+            dataset: {...child.dataset}
+        };
+    });
+
+    const canvasData = {
+        backgroundColor: canvasStyles.backgroundColor,
+        backgroundImage: canvasStyles.backgroundImage,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+        width: canvas.offsetWidth,
+        height: canvas.offsetHeight,
+        elements
+    };
+
+    return canvasData;
+}
+
+async function saveCanvas() {
+    const data = collectCanvasData();
+    const projectId = window.location.pathname.split('/')[2];
+    const layoutData = JSON.stringify(data);
+
+    await fetch(`/api/project/${projectId}/layout`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ layout: layoutData }),
+    });
+
+    console.log(layoutData);
+}
+
+async function loadCanvas() {
+    const projectId = window.location.pathname.split('/')[2]; // Извлекаем ID проекта
+
+    try {
+        const res = await fetch(`/api/project/${projectId}/layout`);
+
+        if (!res.ok) {
+            throw new Error('Ошибка загрузки проекта');
+        }
+
+        const data = await res.json();
+
+        // Логирование полученных данных
+        console.log('Загруженные данные layout:', data);
+
+        // Проверяем, что layout существует и является строкой, если да - распарсим
+        if (data && data.layout) {
+            let parsedLayout;
+
+            // Если layout - строка, то парсим её в объект
+            if (typeof data.layout === 'string') {
+                try {
+                    parsedLayout = JSON.parse(data.layout);
+                } catch (e) {
+                    console.error('Ошибка парсинга JSON:', e);
+                    return;
+                }
+            } else {
+                parsedLayout = data.layout;
+            }
+
+            // Проверка, что parsedLayout содержит элемент elements как массив
+            if (parsedLayout && parsedLayout.elements && Array.isArray(parsedLayout.elements)) {
+                let objects = parsedLayout.elements;
+
+                // Очищаем текущий канвас перед добавлением новых элементов
+                const canvas = document.getElementById('canvas');
+                canvas.innerHTML = '';
+
+                canvas.style.backgroundColor = parsedLayout.backgroundColor || 'white';
+                canvas.style.backgroundImage = parsedLayout.backgroundImage || 'none';
+                canvas.style.width = (parsedLayout.width || 800) + 'px';
+                canvas.style.height = (parsedLayout.height || 600) + 'px';
+                canvas.style.backgroundSize = parsedLayout.backgroundSize || 'cover';
+                canvas.style.backgroundRepeat = parsedLayout.backgroundRepeat || 'no-repeat';
+
+                // Добавляем объекты на холст
+                objects.forEach(el => {
+                    let element;
+
+                    switch (el.tag) {
+                        case 'div':
+                            element = document.createElement('div');
+                            element.style.position = 'absolute'; // Ставим элемент на холст
+                            element.style.left = el.styles.left || '0px'; // Позиция X
+                            element.style.top = el.styles.top || '0px';  // Позиция Y
+                            element.style.width = el.styles.width || '100px';
+                            element.style.height = el.styles.height || '100px';
+                            element.style.fontSize = el.styles.fontSize || '16px';
+                            element.style.color = el.styles.color || 'black';
+                            element.style.backgroundColor = el.styles.backgroundColor || 'transparent';
+                            element.style.rotate = el.styles.rotate || '0deg';
+                            element.cursor = 'pointer';
+                            element.textContent = el.text || '';
+                            element.contentEditable = true;
+                            break;
+
+                        case 'hr':
+                            element = document.createElement('hr');
+                            element.style.position = 'absolute';
+                            element.style.left = el.styles.left || '0px';
+                            element.style.top = el.styles.top || '0px';
+                            element.style.width = el.styles.width || '100%';
+                            element.cursor = 'pointer';
+                            break;
+
+                        case 'img':
+                            element = document.createElement('img');
+                            element.src = el.src || '';
+                            element.style.position = 'absolute';
+                            element.style.left = el.styles.left || '0px';
+                            element.style.top = el.styles.top || '0px';
+                            element.style.width = el.styles.width || '100%';
+                            element.style.height = el.styles.height || 'auto';
+                            element.style.borderRadius = el.styles.borderRadius || '0px';
+                            element.style.rotate = el.styles.rotate || '0deg';
+                            break;
+
+                        case 'pol':
+                            element = document.createElement('pol');
+                            element.style.position = 'absolute';
+                            element.style.left = el.styles.left || '0px';
+                            element.style.top = el.styles.top || '0px';
+                            element.style.width = el.styles.width || '100px';
+                            element.style.height = el.styles.height || '100px';
+                            element.style.backgroundColor = el.styles.backgroundColor || '#3498db';
+                            element.style.clipPath = el.styles.clipPath || '';
+                            element.dataset.sides = el.dataset.sides || 5;
+                            element.style.rotate = el.styles.rotate || '0deg';
+                            element.style.cursor = 'pointer';
+                            break;
+
+                        case 'a':
+                            element = document.createElement('a');
+                            element.href = el.href || '#';
+                            element.style.position = 'absolute';
+                            element.style.left = el.styles.left || '0px';
+                            element.style.top = el.styles.top || '0px';
+                            element.style.fontSize = el.styles.fontSize || '16px';
+                            element.style.textDecoration = 'underline';
+                            element.style.color = el.styles.color || 'black';
+                            element.style.rotate = el.styles.rotate || '0deg';
+                            element.target = el.target || '_blank';
+                            element.cursor = 'pointer';
+                            element.textContent = el.text || '';
+                            element.contentEditable = true;
+                            break;
+
+                        default:
+                            console.error('Неизвестный тег:', el.tag);
+                            return;
+                    }
+
+                    // Добавляем элемент на канвас
+                    const canvas = document.getElementById('canvas');
+
+                    element.onclick = () => selectElement(element);
+                    canvas.appendChild(element);
+
+                    updateObjectTree();
+                    makeDraggable(element);
+                    selectElement(element);
+                });
+            } else {
+                console.error('Ошибка: layout.elements не является массивом');
+            }
+        } else {
+            console.error('Ошибка: Неверная структура данных layout', data);
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки холста:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const projectId = window.location.pathname.split('/')[2];
+    await loadCanvas(projectId);
+});

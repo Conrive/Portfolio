@@ -26,7 +26,6 @@
     <button onclick="addElement('divider')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Разделитель</button>
     <button onclick="addElement('polygon')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Многоугольник</button>
 
-
     <form id="uploadForm" class="mt-4" enctype="multipart/form-data">
         <label class="block font-semibold mb-1">Загрузить изображение</label>
         <input type="file" name="image" class="mb-2" />
@@ -36,10 +35,7 @@
     <div class="p-2 border-b font-bold">Древо объектов</div>
     <ul id="objectTree" class="overflow-auto px-2 py-1 text-sm space-y-1 max-h-[300px]"></ul>
 
-
-
-
-    <button onclick="">Сохранить</button>
+    <button class="hover:bg-gray-100" onclick="saveCanvas()">Сохранить</button>
 </aside>
 
 <!-- Холст -->

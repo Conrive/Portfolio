@@ -117,4 +117,8 @@ router.post('/edit', upload.fields([{ name: 'avatar' }, { name: 'cover' }]), (re
     );
 });
 
+router.get('/logout', (req, res) => {
+    req.session.destroy(() => res.redirect('/login'));
+});
+
 module.exports = router;

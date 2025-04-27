@@ -5,6 +5,11 @@ const multer = require('multer');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+const { promisify } = require('util');
+
+const dbAll = promisify(db.all.bind(db));
+const dbGet = promisify(db.get.bind(db));
+const dbRun = promisify(db.run.bind(db));
 
 // Показ формы добавления проекта
 router.get('/add', (req, res) => {
@@ -191,6 +196,57 @@ router.post('/delete-upload', (req, res) => {
     const { path } = req.body;
     deleteFileIfExists(path);
     res.json({ success: true });
+});
+
+router.post('/project/:id/save', async (req, res) => {
+    const { id } = req.params;
+    const pageData = req.body;
+
+    try {
+        await dbRun('UPDATE projects SET layout = ? WHERE id = ?', [JSON.stringify(pageData), id]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: 'Ошибка сохранения' });
+    }
+});
+
+// Загрузка layout
+router.get('/api/project/:id/layout', async (req, res) => {
+    const projectId = req.params.id;
+
+    try {
+        const project = await dbGet('SELECT layout FROM projects WHERE id = ?', [projectId]);
+
+        if (project) {
+            const layout = project.layout ? JSON.parse(project.layout) : []; // Пустой массив если пусто
+            res.json({ layout });
+        } else {
+            res.status(404).json({ error: 'Project not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Ошибка при загрузке проекта' });
+    }
+});
+
+
+// Сохранение layout
+router.post('/api/project/:id/layout', async (req, res) => {
+    const projectId = req.params.id;
+    const { layout } = req.body;
+
+    if (!layout) {
+        return res.status(400).json({ error: 'Layout is required' });
+    }
+
+    try {
+        await dbRun('UPDATE projects SET layout = ? WHERE id = ?', [JSON.stringify(layout), projectId]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Ошибка при сохранении проекта' });
+    }
 });
 
 module.exports = router;
