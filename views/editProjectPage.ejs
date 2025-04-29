@@ -16,6 +16,7 @@
         }
     </style>
     <link href="/css/output.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
 </head>
 <body class="flex h-screen overflow-hidden bg-gray-100">
 <!-- Левая панель -->
@@ -36,6 +37,10 @@
     <ul id="objectTree" class="overflow-auto px-2 py-1 text-sm space-y-1 max-h-[300px]"></ul>
 
     <button class="hover:bg-gray-100" onclick="saveCanvas()">Сохранить</button>
+
+    <button onclick="exportCanvasToPDF()">Экспортировать в PDF</button>
+
+    <button class="hover:bg-gray-100"><a href="/profile" class="text-red-500">Вернуться в профиль</a></button>
 </aside>
 
 <!-- Холст -->
@@ -50,7 +55,166 @@
 </aside>
 
 <script>
+    async function exportCanvasToPDF() {
+        const canvas = document.getElementById('canvas');
+        const elements = Array.from(canvas.children);
 
+        // Создаем новый документ
+        const pdfDoc = await PDFLib.PDFDocument.create();
+        const page = pdfDoc.addPage([canvas.offsetWidth, canvas.offsetHeight]);
+
+        const fontBytes = await fetch('/fonts/Roboto-Regular.ttf').then(res => res.arrayBuffer());
+        //const customFont = await pdfDoc.embedFont(fontBytes);
+
+        // Рисуем фон канваса
+        const backgroundColor = window.getComputedStyle(canvas).backgroundColor;
+        const [r, g, b] = parseRGB(backgroundColor);
+        const backgroundImage = window.getComputedStyle(canvas).backgroundImage;
+
+        if (backgroundImage && backgroundImage !== 'none') {
+            const urlMatch = backgroundImage.match(/url\("?(.+?)"?\)/);
+
+            if (urlMatch) {
+                const imageUrl = urlMatch[1];
+                try {
+                    const imgBytes = await fetch(imageUrl).then(res => res.arrayBuffer());
+
+                    let pdfImage;
+                    if (imageUrl.endsWith('.jpg') || imageUrl.endsWith('.jpeg')) {
+                        pdfImage = await pdfDoc.embedJpg(imgBytes);
+                    } else if (imageUrl.endsWith('.png')) {
+                        pdfImage = await pdfDoc.embedPng(imgBytes);
+                    }
+
+                    if (pdfImage) {
+                        page.drawImage(pdfImage, {
+                            x: 0,
+                            y: 0,
+                            width: canvas.offsetWidth,
+                            height: canvas.offsetHeight,
+                        });
+                    }
+                } catch (err) {
+                    console.error('Ошибка загрузки фонового изображения', err);
+                }
+            }
+        } else {
+            // Рисуем заливку цветом, если нет фонового изображения
+            const backgroundColor = window.getComputedStyle(canvas).backgroundColor;
+            const [r, g, b] = parseRGB(backgroundColor);
+
+            page.drawRectangle({
+                x: 0,
+                y: 0,
+                width: canvas.offsetWidth,
+                height: canvas.offsetHeight,
+                color: PDFLib.rgb(r / 255, g / 255, b / 255),
+            });
+        }
+
+        // Перебираем все элементы канваса
+        for (const el of elements) {
+            const styles = window.getComputedStyle(el);
+            const left = parseFloat(styles.left);
+            const top = parseFloat(styles.top);
+            const width = parseFloat(styles.width);
+            const height = parseFloat(styles.height);
+
+            if (el.tagName.toLowerCase() === 'div') {
+                const color = parseRGB(styles.color);
+
+                page.drawText(el.textContent || '', {
+                    //font: customFont,
+                    x: left,
+                    y: canvas.offsetHeight - top - 20, // PDF координаты снизу вверх
+                    size: parseFloat(styles.fontSize),
+                    color: PDFLib.rgb(color[0] / 255, color[1] / 255, color[2] / 255),
+                });
+            } else if (el.tagName.toLowerCase() === 'img') {
+                const imgBytes = await fetch(el.src).then(res => res.arrayBuffer());
+                const ext = el.src.split('.').pop().toLowerCase();
+
+                let pdfImage;
+                if (ext === 'jpg' || ext === 'jpeg') {
+                    pdfImage = await pdfDoc.embedJpg(imgBytes);
+                } else if (ext === 'png') {
+                    pdfImage = await pdfDoc.embedPng(imgBytes);
+                } else {
+                    console.error('Неизвестный формат изображения');
+                    continue;
+                }
+
+                page.drawImage(pdfImage, {
+                    x: left,
+                    y: canvas.offsetHeight - top - height,
+                    width: width,
+                    height: height,
+                });
+            } else if (el.tagName.toLowerCase() === 'a') {
+                const color = parseRGB(styles.color);
+
+                page.drawText(el.textContent || '', {
+                    //font: customFont,
+                    x: left,
+                    y: canvas.offsetHeight - top - 20,
+                    size: parseFloat(styles.fontSize),
+                    color: PDFLib.rgb(color[0] / 255, color[1] / 255, color[2] / 255),
+                    underline: styles.textDecoration.includes('underline'),
+                });
+
+                // добавить "кликабельные" ссылки
+            } else if (el.tagName.toLowerCase() === 'polygon' || styles.clipPath.startsWith('polygon')) {
+                const points = parseClipPath(styles.clipPath);
+
+                if (points.length >= 2) {
+                    for (let i = 0; i < points.length; i++) {
+                        const start = points[i];
+                        const end = points[(i + 1) % points.length]; // Замыкаем в кольцо
+
+                        page.drawLine({
+                            start: { x: start.x, y: canvas.offsetHeight - start.y },
+                            end: { x: end.x, y: canvas.offsetHeight - end.y },
+                            thickness: 1,
+                            color: PDFLib.rgb(0, 0, 0),
+                        });
+                    }
+                }
+            } else if (el.tagName.toLowerCase() === 'hr') {
+                page.drawLine({
+                    start: { x: left, y: canvas.offsetHeight - top },
+                    end: { x: left + width, y: canvas.offsetHeight - top },
+                    thickness: 1,
+                    color: PDFLib.rgb(0, 0, 0),
+                });
+            }
+        }
+
+        // Сохраняем и скачиваем
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'canvas.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function parseRGB(rgbString) {
+        const result = rgbString.match(/\d+/g);
+        return result ? result.map(Number).slice(0, 3) : [0, 0, 0];
+    }
+
+    function parseClipPath(clipPath) {
+        const match = clipPath.match(/polygon\((.+)\)/);
+        if (!match) return [];
+
+        return match[1].split(',').map(point => {
+            const [x, y] = point.trim().split(' ');
+            return { x: parseFloat(x) / 100 * canvas.offsetWidth, y: parseFloat(y) / 100 * canvas.offsetHeight };
+        });
+    }
 </script>
 
 <script src="/editor.js"></script>

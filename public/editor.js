@@ -2,10 +2,6 @@ let selectedElement = null;
 let draggedElement = null;
 let offsetX = 0;
 let offsetY = 0;
-let offsetRight = 0;
-let offsetBottom = 0;
-const MAX_CANVAS_WIDTH = 2000;
-const MAX_CANVAS_HEIGHT = 1500;
 
 function rgb2hex(rgb) {
     const result = rgb.match(/\d+/g);
@@ -169,59 +165,67 @@ function selectElement(el) {
 
     if (el.tagName === 'DIV') {
         propsPanel.innerHTML = `
-        <label>Размер текста</label>
-        <input type="number" value="${parseInt(el.style.fontSize)}" 
-               oninput="selectedElement.style.fontSize = this.value + 'px'">
-          
-        <label class="mt-2 block">Цвет фона</label>
-        <input type="color" value="${rgb2hex(getComputedStyle(el).backgroundColor)}" 
-               oninput="selectedElement.style.backgroundColor = this.value">
-        
-        <label class="mt-2 block">Цвет текста</label>
-        <input type="color" value="${rgb2hex(getComputedStyle(el).color)}" 
-               oninput="selectedElement.style.color = this.value">
-        
-         <label class="mt-2 block">Начертание текста</label>
-            <div class="flex gap-2 mt-1 flex-col items-start">
-                <button class="hover:bg-gray-100" onclick="toggleStyle('bold')">Жирный</button>
-                <button class="hover:bg-gray-100" onclick="toggleStyle('italic')">Курсив</button>
-                <button class="hover:bg-gray-100" onclick="toggleStyle('underline')">Подчеркнутый</button>
-                <button class="hover:bg-gray-100" onclick="toggleStyle('line-through')">Зачеркнутый</button>
-            </div>
-
-            <label class="mt-2 block">Шрифт</label>
-            <select onchange="selectedElement.style.fontFamily = this.value">
-                <option value="Arial">Arial</option>
-                <option value="Verdana">Verdana</option>
-                <option value="Georgia">Georgia</option>
-                <option value="Times New Roman">Times New Roman</option>
-                <option value="Courier New">Courier New</option>
-                <option value="Tahoma">Tahoma</option>
-            </select>
-        
-        <label class="mt-2 block">Вращение</label>
-        <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
-               oninput="selectedElement.style.rotate = this.value + 'deg';
-               if(Number(this.value) > Number(this.max)) this.value = this.max;
-               if(Number(this.value) < Number(this.min)) this.value = this.min">
+            <label>Размер текста</label>
+            <input type="number" value="${parseInt(el.style.fontSize)}" 
+                   oninput="selectedElement.style.fontSize = this.value + 'px'">
+              
+            <label class="mt-2 block">Цвет фона</label>
+            <input type="color" value="${rgb2hex(getComputedStyle(el).backgroundColor)}" 
+                   oninput="selectedElement.style.backgroundColor = this.value">
+            
+            <label class="mt-2 block">Цвет текста</label>
+            <input type="color" value="${rgb2hex(getComputedStyle(el).color)}" 
+                   oninput="selectedElement.style.color = this.value">
+            
+            <label class="mt-2 block">Начертание текста</label>
+                <div class="flex gap-2 mt-1 flex-col items-start">
+                    <button class="hover:bg-gray-100" onclick="toggleStyle('bold')">Жирный</button>
+                    <button class="hover:bg-gray-100" onclick="toggleStyle('italic')">Курсив</button>
+                    <button class="hover:bg-gray-100" onclick="toggleStyle('underline')">Подчеркнутый</button>
+                    <button class="hover:bg-gray-100" onclick="toggleStyle('line-through')">Зачеркнутый</button>
+                </div>
+    
+                <label class="mt-2 block">Шрифт</label>
+                <select onchange="selectedElement.style.fontFamily = this.value">
+                    <option value="Arial">Arial</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Tahoma">Tahoma</option>
+                </select>
+            
+            <label class="mt-2 block">Вращение</label>
+            <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
+                   oninput="selectedElement.style.rotate = this.value + 'deg';
+                   if(Number(this.value) > Number(this.max)) this.value = this.max;
+                   if(Number(this.value) < Number(this.min)) this.value = this.min">
+                   
+            <label class="mt-2 block">Z-Index</label>
+            <input type="number" value="${parseInt(el.style.zIndex)}" min="0"
+                oninput="selectedElement.style.zIndex = this.value">
         `;
     } else  if (el.tagName === 'IMG') {
         propsPanel.innerHTML = `
-        <label>Ширина</label>
-        <input type="text" value="${el.style.width || '100%'}" 
-               oninput="selectedElement.style.width = this.value">
-    
-        <label class="mt-2 block">Закругление</label>
-        <input type="text" value="${el.style.borderRadius || '0px'}" 
-               oninput="selectedElement.style.borderRadius = this.value">
-  
-        <label class="mt-2 block">Вращение</label>
-        <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
-               oninput="selectedElement.style.rotate = this.value + 'deg';
-               if(Number(this.value) > Number(this.max)) this.value = this.max;
-               if(Number(this.value) < Number(this.min)) this.value = this.min">
+            <label>Ширина</label>
+            <input type="text" value="${el.style.width || '100%'}" 
+                   oninput="selectedElement.style.width = this.value">
+        
+            <label class="mt-2 block">Закругление</label>
+            <input type="text" value="${el.style.borderRadius || '0px'}" 
+                   oninput="selectedElement.style.borderRadius = this.value">
+      
+            <label class="mt-2 block">Вращение</label>
+            <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
+                   oninput="selectedElement.style.rotate = this.value + 'deg';
+                   if(Number(this.value) > Number(this.max)) this.value = this.max;
+                   if(Number(this.value) < Number(this.min)) this.value = this.min">
+                   
+            <label class="mt-2 block">Z-Index</label>
+            <input type="number" value="${parseInt(el.style.zIndex)}" min="0"
+                oninput="selectedElement.style.zIndex = this.value">
         `;
-    } else if (el.tagName === 'POL' && el.dataset.sides) {
+    } else if (el.tagName === 'POL') {
         propsPanel.innerHTML = `
             <label>Количество сторон</label>
             <input type="number" value="${el.dataset.sides}" min="3" max="12"
@@ -244,6 +248,10 @@ function selectElement(el) {
                oninput="selectedElement.style.rotate = this.value + 'deg';
                if(Number(this.value) > Number(this.max)) this.value = this.max;
                if(Number(this.value) < Number(this.min)) this.value = this.min">
+               
+            <label class="mt-2 block">Z-Index</label>
+            <input type="number" value="${parseInt(el.style.zIndex)}" min="0"
+                oninput="selectedElement.style.zIndex = this.value">
         `;
     } else if (el.tagName === 'A') {
         // Ссылка
@@ -287,6 +295,11 @@ function selectElement(el) {
                oninput="selectedElement.style.rotate = this.value + 'deg';
                if(Number(this.value) > Number(this.max)) this.value = this.max;
                if(Number(this.value) < Number(this.min)) this.value = this.min">
+               
+               
+            <label class="mt-2 block">Z-Index</label>
+            <input type="number" value="${parseInt(el.style.zIndex)}" min="0"
+                oninput="selectedElement.style.zIndex = this.value">
         `;
     } else {
         propsPanel.textContent = 'Нет настроек';
@@ -400,15 +413,18 @@ function updatePropsPanel(el) {
 
     } else {
         propsPanel.innerHTML += `
-    <label class="block mt-2">Позиция X (%):
-      <input type="number" id="posX" value="${left.toFixed(1)}" class="border p-1 w-full" step="0.1" />
-    </label>
-    <label class="block mt-2">Позиция Y (%):
-      <input type="number" id="posY" value="${top.toFixed(1)}" class="border p-1 w-full" step="0.1" />
-    </label>
-    <button onclick="removeElement(selectedElement)" class="mt-4 bg-red-500 text-white px-2 py-1 rounded">
-      Удалить элемент
-    </button>
+            <label class="block mt-2">Позиция X (%):
+              <input type="number" id="posX" value="${left.toFixed(1)}" class="border p-1 w-full" step="0.1" />
+            </label>
+            <label class="block mt-2">Позиция Y (%):
+              <input type="number" id="posY" value="${top.toFixed(1)}" class="border p-1 w-full" step="0.1" />
+            </label>
+            <label class="block mt-2">Имя элемента</label>
+            <input type="text" value="${el.dataset.uid}" 
+                   oninput="selectedElement.dataset.uid = this.value; updateObjectTree();">
+            <button onclick="removeElement(selectedElement)" class="mt-4 bg-red-500 text-white px-2 py-1 rounded">
+              Удалить элемент
+            </button>
   `;
         document.getElementById('posX').addEventListener('input', updateElementPosition);
         document.getElementById('posY').addEventListener('input', updateElementPosition);
@@ -469,7 +485,6 @@ function updateObjectTree() {
         li.className = 'cursor-pointer hover:bg-gray-100 p-1 rounded flex items-center justify-between';
         li.innerHTML = `
       <span class="truncate max-w-[80%]">${el.dataset.name || id}</span>
-      <button class="text-red-500 hover:text-red-700" title="Удалить">🗑️</button>
     `;
 
         // Выбор элемента
@@ -508,6 +523,8 @@ function collectCanvasData() {
                 borderRadius: style.borderRadius,
                 clipPath: child.style.clipPath,
                 rotate: child.style.rotate,
+                zIndex: child.style.zIndex,
+                uid: child.dataset.uid,
             },
             dataset: {...child.dataset}
         };
@@ -606,6 +623,8 @@ async function loadCanvas() {
                             element.style.rotate = el.styles.rotate || '0deg';
                             element.cursor = 'pointer';
                             element.textContent = el.text || '';
+                            element.style.zIndex = el.styles.zIndex || '0';
+                            element.dataset.uid = el.dataset.uid;
                             element.contentEditable = true;
                             break;
 
@@ -628,6 +647,7 @@ async function loadCanvas() {
                             element.style.height = el.styles.height || 'auto';
                             element.style.borderRadius = el.styles.borderRadius || '0px';
                             element.style.rotate = el.styles.rotate || '0deg';
+                            element.style.zIndex = el.styles.zIndex || '0';
                             break;
 
                         case 'pol':
@@ -642,6 +662,8 @@ async function loadCanvas() {
                             element.dataset.sides = el.dataset.sides || 5;
                             element.style.rotate = el.styles.rotate || '0deg';
                             element.style.cursor = 'pointer';
+                            element.style.zIndex = el.styles.zIndex || '0';
+                            element.dataset.uid = el.dataset.uid;
                             break;
 
                         case 'a':
@@ -657,6 +679,8 @@ async function loadCanvas() {
                             element.target = el.target || '_blank';
                             element.cursor = 'pointer';
                             element.textContent = el.text || '';
+                            element.style.zIndex = el.styles.zIndex || '0';
+                            element.dataset.uid = el.dataset.uid;
                             element.contentEditable = true;
                             break;
 
