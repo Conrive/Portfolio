@@ -6,6 +6,7 @@ const SQLiteStore = require('connect-sqlite3')(session);
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const projectRoutes = require('./routes/projects');
+const indexRoutes = require('./routes/index');
 
 app.use(session({
   secret: 'supersecretkey',
@@ -21,12 +22,7 @@ app.use(express.json());
 app.use('/profile', profileRoutes);
 app.use('/projects', projectRoutes);
 
-app.get('/', (req, res) => {
-  res.render('index', { title: 'Добро пожаловать!' });
-});
-
 app.listen(3000, () => console.log('Сервер запущен на http://localhost:3000'));
-
 
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
@@ -34,3 +30,4 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', authRoutes);
 app.use('/', projectRoutes);
 app.use('/', projectRoutes);
+app.use('/', indexRoutes);

@@ -296,7 +296,6 @@ function selectElement(el) {
                if(Number(this.value) > Number(this.max)) this.value = this.max;
                if(Number(this.value) < Number(this.min)) this.value = this.min">
                
-               
             <label class="mt-2 block">Z-Index</label>
             <input type="number" value="${parseInt(el.style.zIndex)}" min="0"
                 oninput="selectedElement.style.zIndex = this.value">

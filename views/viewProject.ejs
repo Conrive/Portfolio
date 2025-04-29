@@ -2,24 +2,42 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title><%= project.title %></title>
-    <link href="/styles.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Просмотр проекта</title>
+    <link href="/css/output.css" rel="stylesheet">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #f0f0f0;
+        }
+        #canvas {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-900">
-<div class="max-w-4xl mx-auto p-6">
-    <% if (project.cover) { %>
-        <img src="<%= project.cover %>" alt="Обложка проекта" class="w-full rounded-lg mb-4 shadow">
-    <% } %>
+<body>
+<div id="canvas"></div>
 
-    <h1 class="text-3xl font-bold mb-4"><%= project.title %></h1>
+<script src="/editor.js"></script>
+<script>
+    // Переопределяем функции редактирования, чтобы они не срабатывали
+    window.makeDraggable = () => {};
+    window.selectElement = () => {};
+    window.updateObjectTree = () => {};
 
-    <p class="mb-4 text-lg"><%= project.description %></p>
-
-    <% if (project.link) { %>
-        <a href="<%= project.link %>" class="text-blue-600 hover:underline" target="_blank">
-            Перейти к внешней ссылке
-        </a>
-    <% } %>
-</div>
+    // Загружаем канвас
+    window.addEventListener('DOMContentLoaded', () => {
+        loadCanvas().then(() => {
+            // После загрузки — отключаем редактируемость
+            const allElements = document.querySelectorAll('#canvas [contenteditable]');
+            allElements.forEach(el => el.contentEditable = false);
+        });
+    });
+</script>
 </body>
 </html>

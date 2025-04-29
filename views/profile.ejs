@@ -54,16 +54,20 @@
         </div>
 
         <!-- Кнопка редактирования -->
-        <div class="text-right">
-            <a href="/profile/edit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Редактировать информацию</a>
-        </div>
+        <% if (isOwner) { %>
+            <div class="text-right">
+                <a href="/profile/edit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Редактировать информацию</a>
+            </div>
+        <% } %>
 
         <!-- Список проектов -->
         <div class="mt-6">
             <h2 class="text-xl font-semibold">Мои проекты</h2>
-            <a href="/projects/add" class="bg-green-500 text-white px-4 py-2 rounded block w-max mt-2">Добавить проект</a>
+            <% if (isOwner) { %>
+                <a href="/projects/add" class="bg-green-500 text-white px-4 py-2 rounded block w-max mt-2">Добавить проект</a>
+            <% } %>
 
-            <% if (projects.length > 0) { %>
+        <% if (projects.length > 0) { %>
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <% projects.forEach(project => { %>
                         <div class="project-card" data-id="<%= project.id %>">
@@ -74,17 +78,23 @@
                                     <p class="text-gray-600"><%= project.description %></p>
                                     <div class="flex items-center justify-between mt-4">
                                         <a href="<%= project.link %>" class="text-blue-500" target="_blank">Cсылка</a>
-                                        <a href="/project/<%= project.id %>/view" class="project-link text-sm text-gray-500 cursor-pointer ml-4 hover:underline">Подробнее</a>
+                                        <a
+                                                href="<%= isOwner ? `/project/${project.id}/edit-page` : `/project/${project.id}/view` %>"
+                                                class="project-link text-sm text-gray-500 cursor-pointer ml-4 hover:underline"
+                                        >
+                                            Подробнее
+                                        </a>
                                     </div>
                                     <!-- Кнопки -->
-                                    <div class="mt-2 flex space-x-2">
-                                        <a href="/projects/edit/<%= project.id %>"
-                                           class="bg-yellow-500 text-white px-3 py-1 rounded">Редактировать</a>
+                                    <% if (isOwner) { %>
+                                        <div class="mt-2 flex space-x-2">
+                                            <a href="/projects/edit/<%= project.id %>" class="bg-yellow-500 text-white px-3 py-1 rounded">Редактировать</a>
 
-                                        <form action="/projects/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?');">
-                                            <button class="bg-red-500 text-white px-3 py-1 rounded">Удалить</button>
-                                        </form>
-                                    </div>
+                                            <form action="/projects/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?');">
+                                                <button class="bg-red-500 text-white px-3 py-1 rounded">Удалить</button>
+                                            </form>
+                                        </div>
+                                    <% } %>
                                 </div>
                             </div>
                         </div>
@@ -97,12 +107,4 @@
     </div>
 </div>
 </body>
-<script>
-    document.querySelectorAll('.project-card').forEach(card => {
-        card.addEventListener('dblclick', () => {
-            const projectId = card.dataset.id;
-            window.location.href = `/project/${projectId}/edit-page`;
-        });
-    });
-</script>
 </html>

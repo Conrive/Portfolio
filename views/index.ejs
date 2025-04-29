@@ -9,6 +9,22 @@
 <body class="bg-gray-100">
 <div class="container mx-auto p-4">
   <h1 class="text-4xl font-bold text-red-800"><%= title %></h1>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
+    <% projects.forEach(project => { %>
+      <div class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-all">
+        <div class="h-40 bg-gray-200 rounded mb-4 flex items-center justify-center text-gray-500">
+          <% if (project.cover) { %>
+            <img src="<%= project.cover %>" alt="Preview" class="max-h-250 max-w-250 object-cover rounded">
+          <% } else { %>
+            No Image
+          <% } %>
+        </div>
+        <h2 class="text-xl font-semibold mb-2"><%= project.title %></h2>
+        <p class="text-sm text-gray-600"><%= project.description || 'No description provided.' %></p>
+      </div>
+    <% }) %>
+  </div>
 </div>
 </body>
 </html>

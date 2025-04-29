@@ -15,7 +15,25 @@ router.get('/', async (req, res) => {
     const user = req.session.user;
     const projects = await getUserProjects(user.id); // Получаем проекты пользователя
 
-    res.render('profile', { user, projects });
+    res.render('profile', { user, projects, isOwner: true });
+});
+
+router.get('/:id', async (req, res) => {
+    const viewer = req.session.user;
+    const profileId = parseInt(req.params.id);
+
+    if (isNaN(profileId)) return res.redirect('/');
+
+    db.get('SELECT * FROM users WHERE id = ?', [profileId], async (err, user) => {
+        if (err || !user) {
+            return res.status(404).send('Пользователь не найден');
+        }
+
+        const projects = await getUserProjects(profileId);
+        const isOwner = viewer && viewer.id === user.id;
+
+        res.render('profile', { user, projects, isOwner });
+    });
 });
 
 // Настройка хранения загруженных файлов

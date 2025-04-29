@@ -1,15 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { createUser, findUserByEmail } = require('../models/userModel');
+const { createUser, findUserByEmail, findUserByUsername } = require('../models/userModel');
 
 router.get('/login', (req, res) => {
     res.render('login', { error: null });
 });
 
 router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    const user = await findUserByEmail(email);
+    const { identifier, password } = req.body;
+
+    let user;
+
+    if (identifier.includes('@')) {
+        user = await findUserByEmail(identifier);
+    } else {
+        user = await findUserByUsername(identifier);
+    }
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.render('login', { error: 'Неверный email или пароль' });
