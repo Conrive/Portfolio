@@ -54,7 +54,7 @@
     <div id="propertiesContent">Выберите элемент</div>
 </aside>
 
-<script>
+<!--<script>
     async function exportCanvasToPDF() {
         const canvas = document.getElementById('canvas');
         const elements = Array.from(canvas.children);
@@ -63,8 +63,9 @@
         const pdfDoc = await PDFLib.PDFDocument.create();
         const page = pdfDoc.addPage([canvas.offsetWidth, canvas.offsetHeight]);
 
-        const fontBytes = await fetch('/fonts/Roboto-Regular.ttf').then(res => res.arrayBuffer());
-        //const customFont = await pdfDoc.embedFont(fontBytes);
+        const fontBytes = await fetch('/fonts/arial.ttf').then(res => res.arrayBuffer());
+        console.log(fontBytes);
+        const customFont = await pdfDoc.embedFont(fontBytes);
 
         // Рисуем фон канваса
         const backgroundColor = window.getComputedStyle(canvas).backgroundColor;
@@ -124,7 +125,7 @@
                 const color = parseRGB(styles.color);
 
                 page.drawText(el.textContent || '', {
-                    //font: customFont,
+                    font: customFont,
                     x: left,
                     y: canvas.offsetHeight - top - 20, // PDF координаты снизу вверх
                     size: parseFloat(styles.fontSize),
@@ -154,7 +155,7 @@
                 const color = parseRGB(styles.color);
 
                 page.drawText(el.textContent || '', {
-                    //font: customFont,
+                    font: customFont,
                     x: left,
                     y: canvas.offsetHeight - top - 20,
                     size: parseFloat(styles.fontSize),
@@ -163,21 +164,26 @@
                 });
 
                 // добавить "кликабельные" ссылки
-            } else if (el.tagName.toLowerCase() === 'polygon' || styles.clipPath.startsWith('polygon')) {
-                const points = parseClipPath(styles.clipPath);
+            } else if (el.tagName.toLowerCase() === 'pol') {
+                const left = parseFloat(styles.left) || el.offsetLeft;
+                const top = parseFloat(styles.top) || el.offsetTop;
+                const width = parseFloat(styles.width) || el.offsetWidth;
+                const height = parseFloat(styles.height) || el.offsetHeight;
 
-                if (points.length >= 2) {
-                    for (let i = 0; i < points.length; i++) {
-                        const start = points[i];
-                        const end = points[(i + 1) % points.length]; // Замыкаем в кольцо
+                const points = parseClipPath(styles.clipPath, width, height);
+                const fillColor = parseRGB(styles.backgroundColor || 'rgb(0,0,0)');
 
-                        page.drawLine({
-                            start: { x: start.x, y: canvas.offsetHeight - start.y },
-                            end: { x: end.x, y: canvas.offsetHeight - end.y },
-                            thickness: 1,
-                            color: PDFLib.rgb(0, 0, 0),
-                        });
-                    }
+                if (points.length > 2) {
+                    const pathData = points.map((p, i) => {
+                        const absX = left + p.x;
+                        const absY = canvas.offsetHeight - (top + p.y); // инверсия Y
+                        return `${i === 0 ? 'M' : 'L'} ${absX.toFixed(2)} ${absY.toFixed(2)}`;
+                    }).join(' ') + ' Z';
+
+                    console.log(left, top, pathData)
+                    page.drawSvgPath(pathData, {
+                        color: PDFLib.rgb(fillColor[0] / 255, fillColor[1] / 255, fillColor[2] / 255),
+                    });
                 }
             } else if (el.tagName.toLowerCase() === 'hr') {
                 page.drawLine({
@@ -188,6 +194,8 @@
                 });
             }
         }
+
+
 
         // Сохраняем и скачиваем
         const pdfBytes = await pdfDoc.save();
@@ -206,16 +214,26 @@
         return result ? result.map(Number).slice(0, 3) : [0, 0, 0];
     }
 
-    function parseClipPath(clipPath) {
+    function parseClipPath(clipPath, width, height) {
         const match = clipPath.match(/polygon\((.+)\)/);
         if (!match) return [];
 
         return match[1].split(',').map(point => {
-            const [x, y] = point.trim().split(' ');
-            return { x: parseFloat(x) / 100 * canvas.offsetWidth, y: parseFloat(y) / 100 * canvas.offsetHeight };
+            const [xRaw, yRaw] = point.trim().split(/\s+/);
+
+            const x = xRaw.includes('%') ? (parseFloat(xRaw) / 100) * width : parseFloat(xRaw);
+            const y = yRaw.includes('%') ? (parseFloat(yRaw) / 100) * height : parseFloat(yRaw);
+
+            return { x, y };
         });
+
     }
-</script>
+
+</script> -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="/pdfExport.js"></script>
 
 <script src="/editor.js"></script>
 </body>
