@@ -105,8 +105,7 @@ async function exportCanvasToPDF() {
                         color: rgbToHex(r, g, b),
                         points: polyPoints
                     }],
-                    absolutePosition: { x: left, y: top },
-                    ...(rotation !== 0 && { rotation })
+                    absolutePosition: { x: left, y: top }
                 });
             }
         }
@@ -132,18 +131,6 @@ function parseClipPath(clipPath, width, height) {
         const y = yRaw.includes('%') ? (parseFloat(yRaw) / 100) * height : parseFloat(yRaw);
         return { x, y };
     });
-}
-
-// Получение rotation
-function parseRotation(el) {
-    const inlineRotate = el.style.rotate;
-    if (inlineRotate && inlineRotate.endsWith('deg')) {
-        return parseFloat(inlineRotate);
-    }
-
-    const transform = getComputedStyle(el).transform;
-    const match = transform.match(/rotate\(([-\d.]+)deg\)/);
-    return match ? parseFloat(match[1]) : 0;
 }
 
 // Конвертация изображения в base64
