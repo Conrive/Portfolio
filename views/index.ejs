@@ -12,7 +12,7 @@
 
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
     <% projects.forEach(project => { %>
-      <div class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-all">
+      <div class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-all project-card" data-id="<%= project.id %>">
         <div class="h-40 bg-gray-200 rounded mb-4 flex items-center justify-center text-gray-500">
           <% if (project.cover) { %>
             <img src="<%= project.cover %>" alt="Preview" class="max-h-250 max-w-250 object-cover rounded">
@@ -27,4 +27,12 @@
   </div>
 </div>
 </body>
+<script>
+    document.querySelectorAll('.project-card').forEach(card => {
+        card.addEventListener('dblclick', () => {
+            const projectId = card.dataset.id;
+            window.location.href = `/project/${projectId}/view`;
+        });
+    });
+</script>
 </html>

@@ -15,7 +15,7 @@
     <div class="flex items-center gap-4 relative">
         <!-- Поле поиска -->
         <div class="relative">
-            <input id="searchInput" type="text" placeholder="Поиск..."
+            <input id="searchInput" type="text" placeholder="Поиск..." autocomplete="off"
                    class="pl-4 pr-10 py-1 rounded-md bg-gray-100 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
             />
             <svg class="w-5 h-5 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
@@ -24,7 +24,7 @@
             </svg>
 
             <!-- Выпадающее окно -->
-            <div id="searchResults" class="hidden absolute top-full left-0 mt-2 w-96 max-h-[50vh] bg-white shadow-lg rounded-md overflow-y-auto border border-gray-200 z-40">
+            <div id="searchResults" class="hidden absolute top-full right-0 mt-2 w-96 max-h-[50vh] bg-white shadow-lg rounded-md overflow-y-auto border border-gray-200 z-40">
                 <!-- Фильтры -->
                 <div class="flex justify-between px-4 py-2 border-b border-gray-300 bg-gray-50 sticky top-0">
                     <button class="filter-btn active" data-filter="all">Все</button>

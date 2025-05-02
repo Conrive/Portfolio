@@ -7,6 +7,9 @@ const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const projectRoutes = require('./routes/projects');
 const indexRoutes = require('./routes/index');
+const searchRoutes = require('./routes/search');
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
   secret: 'supersecretkey',
@@ -19,15 +22,12 @@ app.use(session({
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+app.set('view engine', 'ejs');
 app.use('/profile', profileRoutes);
 app.use('/projects', projectRoutes);
-
-app.listen(3000, () => console.log('Сервер запущен на http://localhost:3000'));
-
-app.set('view engine', 'ejs');
-app.use(express.static(path.join(__dirname, 'public')));
-
+app.use('/', searchRoutes);
 app.use('/', authRoutes);
 app.use('/', projectRoutes);
-app.use('/', projectRoutes);
 app.use('/', indexRoutes);
+
+app.listen(3000, () => console.log('Сервер запущен на http://localhost:3000'));

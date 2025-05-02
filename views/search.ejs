@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Поиск</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body> <%- include('partials/nav') %>
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+    <h1 class="text-2xl font-bold mb-6">Результаты поиска для: "<%= query %>"</h1>
+
+    <% if (users && users.length > 0) { %>
+        <h2 class="text-xl font-semibold mt-6 mb-4">Пользователи</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <% users.forEach(user => { %>
+                <div class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-all user-card" data-id="<%= user.id %>">
+                    <div class="h-40 flex items-center justify-center mb-4">
+                        <% if (user.avatar) { %>
+                            <img src="<%= user.avatar %>" class="rounded-full h-24 w-24 object-cover">
+                        <% } else { %>
+                            <div class="text-gray-500">No Avatar</div>
+                        <% } %>
+                    </div>
+                    <h2 class="text-lg font-semibold mb-1"><%= user.name %></h2>
+                    <p class="text-sm text-gray-600 overflow-hidden whitespace-nowrap text-ellipsis"><%= user.bio || 'Без описания' %></p>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+
+    <% if (projects && projects.length > 0) { %>
+        <h2 class="text-xl font-semibold mt-10 mb-4">Проекты</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <% projects.forEach(project => { %>
+                <div class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-all project-card" data-id="<%= project.id %>">
+                    <div class="h-40 bg-gray-200 rounded mb-4 flex items-center justify-center text-gray-500">
+                        <% if (project.cover) { %>
+                            <img src="<%= project.cover %>" alt="Preview" class="max-h-250 max-w-250 object-cover rounded">
+                        <% } else { %>
+                            No Image
+                        <% } %>
+                    </div>
+                    <h2 class="text-xl font-semibold mb-2"><%= project.title %></h2>
+                    <p class="text-sm text-gray-600 overflow-hidden whitespace-nowrap text-ellipsis"><%= project.description || 'No description provided.' %></p>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+</div>
+</body>
+<script>
+    document.querySelectorAll('.project-card').forEach(card => {
+        card.addEventListener('dblclick', () => {
+            const projectId = card.dataset.id;
+            window.location.href = `/project/${projectId}/view`;
+        });
+    });
+
+    document.querySelectorAll('.user-card').forEach(card => {
+        card.addEventListener('dblclick', () => {
+            const userId = card.dataset.id;
+            window.location.href = `/profile/${userId}`;
+        });
+    });
+</script>
+</html>

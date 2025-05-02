@@ -107,4 +107,12 @@
     </div>
 </div>
 </body>
+<script>
+    document.querySelectorAll('.project-card').forEach(card => {
+        card.addEventListener('dblclick', () => {
+            const projectId = card.dataset.id;
+            window.location.href = `/project/${projectId}/view`;
+        });
+    });
+</script>
 </html>
