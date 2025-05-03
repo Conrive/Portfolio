@@ -16,31 +16,34 @@
         }
     </style>
     <link href="/css/output.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
 </head>
 <body class="flex h-screen overflow-hidden bg-gray-100">
 <!-- Левая панель -->
 <aside class="w-1/5 bg-white border-r p-4 space-y-2 flex flex-col items-start">
-    <h2 class="font-bold mb-2">Добавить элемент</h2>
-    <button onclick="addElement('text')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Текст</button>
-    <button onclick="addElement('link')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Ссылка</button>
-    <button onclick="addElement('divider')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Разделитель</button>
-    <button onclick="addElement('polygon')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Многоугольник</button>
+    <div class="flex flex-col justify-between space-x-5 border-b w-full">
+        <h2 class="font-bold mb-2">Добавить элемент</h2>
+        <button onclick="addElement('text')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Текст</button>
+        <button onclick="addElement('link')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Ссылка</button>
+        <button onclick="addElement('divider')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Разделитель</button>
+        <button onclick="addElement('polygon')" class="btn w-full text-left hover:bg-gray-100 p-2 rounded">Многоугольник</button>
+    </div>
 
-    <form id="uploadForm" class="mt-4" enctype="multipart/form-data">
-        <label class="block font-semibold mb-1">Загрузить изображение</label>
-        <input type="file" name="image" class="mb-2" />
-        <button type="submit" class="btn">Загрузить</button>
-    </form>
+    <div class="flex flex-col justify-between space-x-5 w-full">
+        <form id="uploadForm" class="mt-4" enctype="multipart/form-data">
+            <label class="block font-semibold mb-2">Загрузить изображение</label>
+            <input type="file" name="image" class="mb-2 w-full p-2 border rounded" accept="image/png, image/jpeg, image/webp"/>
+            <button class="btn bg-amber-500 text-white px-4 py-1 rounded flex w-max mt-2 hover:bg-amber-600 mb-2" type="submit">Загрузить</button>
+        </form>
+    </div>
 
-    <div class="p-2 border-b font-bold">Древо объектов</div>
-    <ul id="objectTree" class="overflow-auto px-2 py-1 text-sm space-y-1 max-h-[300px]"></ul>
+    <div class="font-bold mb-2 mt-10">Древо объектов</div>
+    <ul id="objectTree" class="border-y overflow-auto px-2 py-1 text-sm space-y-1 w-full max-h-[300px]"></ul>
 
-    <button class="hover:bg-gray-100" onclick="saveCanvas()">Сохранить</button>
+    <button class="bg-green-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-green-600" onclick="saveCanvas()">Сохранить</button>
 
-    <button onclick="exportCanvasToPDF()">Экспортировать в PDF</button>
+    <button class="bg-red-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-red-600" onclick="exportCanvasToPDF()">Экспортировать в PDF</button>
 
-    <button class="hover:bg-gray-100"><a href="/profile" class="text-red-500">Вернуться в профиль</a></button>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600"><a href="/profile">Вернуться в профиль</a></button>
 </aside>
 
 <!-- Холст -->
@@ -49,7 +52,7 @@
 </main>
 
 <!-- Правая панель -->
-<aside class="w-1/5 bg-white border-l p-4" id="propertiesPanel">
+<aside class="overflow-x-scroll w-1/5 bg-white border-l p-4" id="propertiesPanel">
     <h2 class="font-bold mb-2">Свойства</h2>
     <div id="propertiesContent">Выберите элемент</div>
 </aside>

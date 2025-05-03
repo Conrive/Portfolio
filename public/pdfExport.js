@@ -7,7 +7,7 @@ async function exportCanvasToPDF() {
     const height = canvas.offsetHeight;
 
     const content = [];
-
+    const [r, g, b] = parseRGB(canvasStyles.backgroundColor);
     content.push({
         canvas: [{
             type: 'rect',
@@ -15,7 +15,7 @@ async function exportCanvasToPDF() {
             y: 0,
             w: width,
             h: height,
-            color: canvasStyles.backgroundColor
+            color: rgbToHex(r, g, b),
         }],
         absolutePosition: { x: 0, y: 0 }
     });
@@ -45,12 +45,13 @@ async function exportCanvasToPDF() {
         const width = parseFloat(styles.width);
         const height = parseFloat(styles.height);
         const fontSize = parseFloat(styles.fontSize);
+        const [r, g, b] = parseRGB(styles.color);
 
         if (el.tagName.toLowerCase() === 'div') {
             content.push({
                 text: el.textContent,
                 fontSize,
-                color: styles.color,
+                color: rgbToHex(r, g, b),
                 absolutePosition: { x: left, y: top }
             });
 
@@ -58,7 +59,7 @@ async function exportCanvasToPDF() {
             content.push({
                 text: el.textContent,
                 fontSize,
-                color: styles.color,
+                color: rgbToHex(r, g, b),
                 decoration: styles.textDecoration.includes('underline') ? 'underline' : undefined,
                 link: el.href || undefined,
                 absolutePosition: { x: left, y: top }

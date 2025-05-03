@@ -56,7 +56,7 @@ function addElement(type) {
 
         case 'link':
             newEl = document.createElement('a');
-            newEl.href = '#';
+            newEl.href = 'http://google.com/';
             newEl.textContent = 'Новая ссылка';
             newEl.target = '_blank';
             newEl.style.textDecoration = 'underline';
@@ -158,6 +158,30 @@ function stopDrag() {
     draggedElement = null;
 }
 
+function resetBG(el) {
+    el.style.backgroundColor = 'white';
+    el.style.backgroundImage = '';
+}
+
+function validateURL() {
+    const input = document.getElementById('urlInput');
+    const value = input.value.trim();
+
+    try {
+        const url = new URL(value);
+
+        if (url.protocol === 'http:' || url.protocol === 'https:') {
+            selectedElement.href = value;
+        } else {
+            selectedElement.href = '';
+            alert('Ошибка! Проверьте правильность ссылки');
+        }
+    } catch (e) {
+        selectedElement.href = '';
+        alert('Ошибка! Проверьте валидность ссылки');
+    }
+}
+
 function selectElement(el) {
     selectedElement = el;
     const propsPanel = document.getElementById('propertiesContent');
@@ -165,104 +189,65 @@ function selectElement(el) {
 
     if (el.tagName === 'DIV') {
         propsPanel.innerHTML = `
-            <label>Размер текста</label>
+            <label class="block text-sm mb-1 mt-3">Размер текста</label>
             <input type="number" value="${parseInt(el.style.fontSize)}" 
-                   oninput="selectedElement.style.fontSize = this.value + 'px'">
+                   oninput="selectedElement.style.fontSize = this.value + 'px'" class="w-full bg-gray-200 pl-3 rounded-2xl">
+                   
+            <label class="block text-sm mb-1 mt-3">Высота</label>
+            <input type="number" value="${parseInt(el.style.width)}" 
+                   oninput="selectedElement.style.width = this.value + 'px'" class="w-full bg-gray-200 pl-3 rounded-2xl">
+                   
+            <label class="block text-sm mb-1 mt-3">Ширина</label>
+            <input type="number" value="${parseInt(el.style.height)}" 
+                   oninput="selectedElement.style.height = this.value + 'px'" class="w-full bg-gray-200 pl-3 rounded-2xl">
               
-            <label class="mt-2 block">Цвет фона</label>
+            <label class="block text-sm mb-1 mt-3">Цвет фона</label>
             <input type="color" value="${rgb2hex(getComputedStyle(el).backgroundColor)}" 
                    oninput="selectedElement.style.backgroundColor = this.value">
             
-            <label class="mt-2 block">Цвет текста</label>
+            <label class="block text-sm mb-1 mt-3">Цвет текста</label>
             <input type="color" value="${rgb2hex(getComputedStyle(el).color)}" 
                    oninput="selectedElement.style.color = this.value">
             
-            <label class="mt-2 block">Начертание текста</label>
-                <div class="flex gap-2 mt-1 flex-col items-start">
-                    <button class="hover:bg-gray-100" onclick="toggleStyle('bold')">Жирный</button>
-                    <button class="hover:bg-gray-100" onclick="toggleStyle('italic')">Курсив</button>
-                    <button class="hover:bg-gray-100" onclick="toggleStyle('underline')">Подчеркнутый</button>
-                    <button class="hover:bg-gray-100" onclick="toggleStyle('line-through')">Зачеркнутый</button>
-                </div>
+            <label class="block text-sm mb-1 mt-3">Начертание текста</label>
+            <div class="flex gap-2 mt-1 flex-col items-start border-y border-y-gray-300">
+                <button class="hover:bg-gray-100" onclick="toggleStyle('bold')">Жирный</button>
+                <button class="hover:bg-gray-100" onclick="toggleStyle('italic')">Курсив</button>
+                <button class="hover:bg-gray-100" onclick="toggleStyle('underline')">Подчеркнутый</button>
+                <button class="hover:bg-gray-100" onclick="toggleStyle('line-through')">Зачеркнутый</button>
+            </div>
     
-                <label class="mt-2 block">Шрифт</label>
-                <select onchange="selectedElement.style.fontFamily = this.value">
-                    <option value="Arial">Arial</option>
-                    <option value="Verdana">Verdana</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Times New Roman">Times New Roman</option>
-                    <option value="Courier New">Courier New</option>
-                    <option value="Tahoma">Tahoma</option>
-                </select>
-            
-            <label class="mt-2 block">Вращение</label>
-            <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
-                   oninput="selectedElement.style.rotate = this.value + 'deg';
-                   if(Number(this.value) > Number(this.max)) this.value = this.max;
-                   if(Number(this.value) < Number(this.min)) this.value = this.min">
-                   
-            <label class="mt-2 block">Z-Index</label>
-            <input type="number" value="${parseInt(el.style.zIndex)}" min="0"
-                oninput="selectedElement.style.zIndex = this.value">
-        `;
-    } else  if (el.tagName === 'IMG') {
-        propsPanel.innerHTML = `
-            <label>Ширина</label>
-            <input type="text" value="${el.style.width || '100%'}" 
-                   oninput="selectedElement.style.width = this.value">
-        
-            <label class="mt-2 block">Закругление</label>
-            <input type="text" value="${el.style.borderRadius || '0px'}" 
-                   oninput="selectedElement.style.borderRadius = this.value">
-      
-            <label class="mt-2 block">Вращение</label>
-            <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
-                   oninput="selectedElement.style.rotate = this.value + 'deg';
-                   if(Number(this.value) > Number(this.max)) this.value = this.max;
-                   if(Number(this.value) < Number(this.min)) this.value = this.min">
-                   
-            <label class="mt-2 block">Z-Index</label>
-            <input type="number" value="${parseInt(el.style.zIndex)}" min="0"
-                oninput="selectedElement.style.zIndex = this.value">
-        `;
-    } else if (el.tagName === 'POL') {
-        propsPanel.innerHTML = `
-            <label>Количество сторон</label>
-            <input type="number" value="${el.dataset.sides}" min="3" max="12"
-                   oninput="updatePolygonSides(this.value)">
-            
-            <label class="mt-2 block">Цвет заливки</label>
-            <input type="color" value="${rgb2hex(getComputedStyle(el).backgroundColor)}" 
-                   oninput="selectedElement.style.backgroundColor = this.value">
-            
-            <label class="mt-2 block">Ширина</label>
-            <input type="text" value="${selectedElement.style.width}" 
-                   oninput="selectedElement.style.width = this.value">
-
-            <label class="mt-2 block">Высота</label>
-            <input type="text" value="${selectedElement.style.height}" 
-                   oninput="selectedElement.style.height = this.value">
-            
-            <label class="mt-2 block">Вращение</label>
-            <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
-               oninput="selectedElement.style.rotate = this.value + 'deg';
-               if(Number(this.value) > Number(this.max)) this.value = this.max;
-               if(Number(this.value) < Number(this.min)) this.value = this.min">
-               
-            <label class="mt-2 block">Z-Index</label>
-            <input type="number" value="${parseInt(el.style.zIndex)}" min="0"
-                oninput="selectedElement.style.zIndex = this.value">
+            <label class="block text-sm mb-1 mt-3">Шрифт</label>
+            <select onchange="selectedElement.style.fontFamily = this.value">
+                <option value="Arial">Arial</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Tahoma">Tahoma</option>
+            </select>
         `;
     } else if (el.tagName === 'A') {
-        // Ссылка
         propsPanel.innerHTML = `
             <label>Текст ссылки</label>
             <input type="text" value="${el.textContent}" 
                    oninput="selectedElement.textContent = this.value">
+                   
+            <label class="block text-sm mb-1">Размер текста</label>
+            <input type="number" value="${parseInt(el.style.fontSize)}" 
+                   oninput="selectedElement.style.fontSize = this.value + 'px'" class="w-full bg-gray-200 pl-3 rounded-2xl">
+                   
+            <label class="block text-sm mb-1">Высота</label>
+            <input type="number" value="${parseInt(el.style.width)}" 
+                   oninput="selectedElement.style.width = this.value + 'px'" class="w-full bg-gray-200 pl-3 rounded-2xl">
+                   
+            <label class="block text-sm mb-1">Ширина</label>
+            <input type="number" value="${parseInt(el.style.height)}" 
+                   oninput="selectedElement.style.height = this.value + 'px'" class="w-full bg-gray-200 pl-3 rounded-2xl">
 
             <label class="mt-2 block">URL</label>
-            <input type="text" value="${el.href}" 
-                   oninput="selectedElement.href = this.value">
+            <input type="text" id="urlInput" value="${el.href}">
+            <button class="bg-green-500 text-white px-2 py-1 rounded flex w-max mt-2 hover:bg-green-600" onclick="validateURL()">Применить ссылку</button>
 
             <label class="mt-2 block">Цвет текста</label>
             <input type="color" value="${rgb2hex(getComputedStyle(el).color)}" 
@@ -272,8 +257,8 @@ function selectElement(el) {
             <input type="number" value="${parseInt(el.style.fontSize)}" 
                    oninput="selectedElement.style.fontSize = this.value + 'px'">
 
-            <label class="mt-2 block">Начертание текста</label>
-            <div class="flex gap-2 mt-1 flex-col">
+            <label class="block text-sm mb-1 mt-3">Начертание текста</label>
+            <div class="flex gap-2 mt-1 flex-col items-start border-y border-y-gray-300">
                 <button class="hover:bg-gray-100" onclick="toggleStyle('bold')">Жирный</button>
                 <button class="hover:bg-gray-100" onclick="toggleStyle('italic')">Курсив</button>
                 <button class="hover:bg-gray-100" onclick="toggleStyle('underline')">Подчеркнутый</button>
@@ -289,19 +274,35 @@ function selectElement(el) {
                 <option value="Courier New">Courier New</option>
                 <option value="Tahoma">Tahoma</option>
             </select>
-            
-            <label class="mt-2 block">Вращение</label>
-            <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
-               oninput="selectedElement.style.rotate = this.value + 'deg';
-               if(Number(this.value) > Number(this.max)) this.value = this.max;
-               if(Number(this.value) < Number(this.min)) this.value = this.min">
-               
-            <label class="mt-2 block">Z-Index</label>
-            <input type="number" value="${parseInt(el.style.zIndex)}" min="0"
-                oninput="selectedElement.style.zIndex = this.value">
         `;
-    } else {
-        propsPanel.textContent = 'Нет настроек';
+    } else if (el.tagName === 'IMG') {
+        propsPanel.innerHTML = `
+            <label class="block text-sm mb-1 mt-3">Ширина</label>
+            <input type="number" value="${parseInt(el.style.width)}" 
+                   oninput="selectedElement.style.width = this.value + '%'" class="w-full bg-gray-200 pl-3 rounded-2xl">
+        
+            <label class="block text-sm mb-1 mt-3">Закругление</label>
+            <input type="number" value="${parseInt(el.style.borderRadius) || '0px'}" 
+                   oninput="selectedElement.style.borderRadius = this.value + 'px'" class="w-full bg-gray-200 pl-3 rounded-2xl">
+        `;
+    } else if (el.tagName === 'POL') {
+        propsPanel.innerHTML = `
+            <label class="block text-sm mb-1 mt-3">Количество сторон</label>
+            <input type="number" value="${el.dataset.sides}" min="3" max="12"
+                   oninput="updatePolygonSides(this.value)" class="w-full bg-gray-200 pl-3 rounded-2xl">
+            
+            <label class="block text-sm mb-1 mt-3">Цвет заливки</label>
+            <input type="color" value="${rgb2hex(getComputedStyle(el).backgroundColor)}" 
+                   oninput="selectedElement.style.backgroundColor = this.value" class="w-full bg-gray-200 pl-3 rounded-2xl">
+            
+            <label class="block text-sm mb-1 mt-3">Высота</label>
+            <input type="text" value="${selectedElement.style.width}" 
+                   oninput="selectedElement.style.width = this.value" class="w-full bg-gray-200 pl-3 rounded-2xl">
+
+            <label class="block text-sm mb-1 mt-3">Ширина</label>
+            <input type="text" value="${selectedElement.style.height}" 
+                   oninput="selectedElement.style.height = this.value" class="w-full bg-gray-200 pl-3 rounded-2xl">
+        `;
     }
 
     updatePropsPanel(el)
@@ -354,6 +355,8 @@ function addImageElement(url) {
     img.src = url;
     img.classList.add('max-w-full', 'rounded', 'absolute');
     img.style.cursor = 'pointer';
+    img.style.width = '20%';
+    img.style.overflow = 'hidden';
     img.onclick = () => selectElement(img);
     document.getElementById('canvas').appendChild(img);
     updateObjectTree();
@@ -373,21 +376,22 @@ function updatePropsPanel(el) {
     if (el.id === 'canvas') {
         // Панель для фона
         propsPanel.innerHTML = `
-          <div class="mb-2">
+          <div class="mb-5">
             <label class="block text-sm mb-1">Цвет фона</label>
             <input type="color" id="backgroundColor" value="${rgb2hex(getComputedStyle(el).backgroundColor)}" class="w-full">
           </div>
-          <div class="mb-2">
+          <div class="mb-5">
             <label class="block text-sm mb-1">Фон-картинка (URL)</label>
-            <input type="text" id="backgroundImage" placeholder="https://example.com/image.png" class="w-full">
+            <input type="text" id="backgroundImage" placeholder="https://example.com/image.png" class="w-full bg-gray-200 pl-3 rounded-2xl">
+            <button onclick="resetBG(selectedElement)">Очистить фон</button>
           </div>
-          <div class="mb-2">
+          <div class="mb-5">
             <label class="block text-sm mb-1">Ширина (px)</label>
-            <input type="number" id="canvasWidthInput" value="${canvasWidth}" class="w-full" />
+            <input type="number" id="canvasWidthInput" value="${canvasWidth}" class="w-full bg-gray-200 pl-3 rounded-2xl" />
           </div>
-          <div class="mb-2">
+          <div class="mb-5">
             <label class="block text-sm mb-1">Высота (px)</label>
-            <input type="number" id="canvasHeightInput" value="${canvasHeight}" class="w-full" />
+            <input type="number" id="canvasHeightInput" value="${canvasHeight}" class="w-full bg-gray-200 pl-3 rounded-2xl" />
           </div>
         `;
 
@@ -397,9 +401,26 @@ function updatePropsPanel(el) {
 
         document.getElementById('backgroundImage').addEventListener('change', (e) => {
             const url = e.target.value.trim();
-            el.style.backgroundImage = url ? `url(${url})` : '';
-            el.style.backgroundSize = 'cover';
-            el.style.backgroundPosition = 'center';
+            if (!url) {
+                el.style.backgroundImage = '';
+                return;
+            }
+
+            const img = new Image();
+
+            img.src = url;
+            img.onload = () => {
+                // Картинка загрузилась успешно
+                el.style.backgroundImage = `url(${url})`;
+                el.style.backgroundSize = 'cover';
+                el.style.backgroundPosition = 'center';
+            };
+
+            img.onerror = () => {
+                // Ошибка загрузки — сбрасываем фон
+                el.style.backgroundImage = '';
+                alert('Ошибка загрузки! Проверьте валидность ссылки.');
+            };
         });
 
         document.getElementById('canvasWidthInput').addEventListener('input', (e) => {
@@ -412,15 +433,26 @@ function updatePropsPanel(el) {
 
     } else {
         propsPanel.innerHTML += `
-            <label class="block mt-2">Позиция X (%):
-              <input type="number" id="posX" value="${left.toFixed(1)}" class="border p-1 w-full" step="0.1" />
+            <label class="block text-sm mb-1 mt-3">Вращение</label>
+            <input type="number" value="${parseInt(el.style.rotate)}" min="-360" max="360"
+                   oninput="selectedElement.style.rotate = this.value + 'deg';
+                   if(Number(this.value) > Number(this.max)) this.value = this.max;
+                   if(Number(this.value) < Number(this.min)) this.value = this.min"
+                   class="w-full bg-gray-200 pl-3 rounded-2xl">
+                   
+            <label class="block text-sm mb-1 mt-3">Z-Index</label>
+            <input type="number" value="${parseInt(el.style.zIndex)}" min="0"
+                oninput="selectedElement.style.zIndex = this.value"
+                class="w-full bg-gray-200 pl-3 rounded-2xl">
+            <label class="block text-sm mb-1 mt-3">Позиция X (%):
+              <input type="number" id="posX" value="${left.toFixed(1)}" class="w-full bg-gray-200 p-2 rounded-2xl" step="0.1" />
             </label>
-            <label class="block mt-2">Позиция Y (%):
-              <input type="number" id="posY" value="${top.toFixed(1)}" class="border p-1 w-full" step="0.1" />
+            <label class="block text-sm mb-1 mt-3">Позиция Y (%):
+              <input type="number" id="posY" value="${top.toFixed(1)}" class="w-full bg-gray-200 p-2 rounded-2xl" step="0.1" />
             </label>
-            <label class="block mt-2">Имя элемента</label>
+            <label class="block text-sm mb-1 mt-3">Имя элемента</label>
             <input type="text" value="${el.dataset.uid}" 
-                   oninput="selectedElement.dataset.uid = this.value; updateObjectTree();">
+                   oninput="selectedElement.dataset.uid = this.value; updateObjectTree();" class="w-full bg-gray-200 p-2 rounded-2xl">
             <button onclick="removeElement(selectedElement)" class="mt-4 bg-red-500 text-white px-2 py-1 rounded">
               Удалить элемент
             </button>
@@ -529,7 +561,7 @@ function collectCanvasData() {
         };
     });
 
-    const canvasData = {
+    return {
         backgroundColor: canvasStyles.backgroundColor,
         backgroundImage: canvasStyles.backgroundImage,
         backgroundRepeat: 'no-repeat',
@@ -538,8 +570,6 @@ function collectCanvasData() {
         height: canvas.offsetHeight,
         elements
     };
-
-    return canvasData;
 }
 
 async function saveCanvas() {
@@ -634,6 +664,7 @@ async function loadCanvas() {
                             element.style.top = el.styles.top || '0px';
                             element.style.width = el.styles.width || '100%';
                             element.cursor = 'pointer';
+                            element.dataset.uid = el.dataset.uid;
                             break;
 
                         case 'img':
@@ -647,6 +678,7 @@ async function loadCanvas() {
                             element.style.borderRadius = el.styles.borderRadius || '0px';
                             element.style.rotate = el.styles.rotate || '0deg';
                             element.style.zIndex = el.styles.zIndex || '0';
+                            element.dataset.uid = el.dataset.uid;
                             break;
 
                         case 'pol':

@@ -8,10 +8,6 @@
 </head>
 <body class="bg-gray-100"> <%- include('partials/nav') %>
 <div class="max-w-4xl mx-auto p-6 bg-white rounded shadow-md mt-6">
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold">Привет, <%= user.name %>!</h1>
-        <a href="/logout" class="text-red-500">Выйти</a>
-    </div>
 
     <!-- Шапка профиля -->
     <div class="relative bg-white shadow">
@@ -53,19 +49,18 @@
             <% } %>
         </div>
 
-        <!-- Кнопка редактирования -->
-        <% if (isOwner) { %>
-            <div class="text-right">
-                <a href="/profile/edit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Редактировать информацию</a>
-            </div>
-        <% } %>
-
         <!-- Список проектов -->
         <div class="mt-6">
             <h2 class="text-xl font-semibold">Мои проекты</h2>
-            <% if (isOwner) { %>
-                <a href="/projects/add" class="bg-green-500 text-white px-4 py-2 rounded block w-max mt-2">Добавить проект</a>
-            <% } %>
+            <div class="flex justify-between mt-6">
+                <% if (isOwner) { %>
+                    <a href="/projects/add" class="bg-green-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-green-600">Добавить проект</a>
+                <% } %>
+                <!-- Кнопка редактирования -->
+                <% if (isOwner) { %>
+                    <a href="/profile/edit" class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600">Редактировать информацию</a>
+                <% } %>
+            </div>
 
         <% if (projects.length > 0) { %>
                 <div class="grid grid-cols-2 gap-4 mt-4">
@@ -78,11 +73,10 @@
                                     <p class="text-gray-600"><%= project.description %></p>
                                     <div class="flex items-center justify-between mt-4">
                                         <a href="<%= project.link %>" class="text-blue-500" target="_blank">Cсылка</a>
-                                        <a
-                                                href="<%= isOwner ? `/project/${project.id}/edit-page` : `/project/${project.id}/view` %>"
-                                                class="project-link text-sm text-gray-500 cursor-pointer ml-4 hover:underline"
+                                        <a href="<%= isOwner ? `/project/${project.id}/edit-page` : `/project/${project.id}/view` %>"
+                                           class="project-link text-sm text-blue-600 cursor-pointer ml-4 hover:underline"
                                         >
-                                            Подробнее
+                                            Макет
                                         </a>
                                     </div>
                                     <!-- Кнопки -->
