@@ -8,6 +8,9 @@ const profileRoutes = require('./routes/profile');
 const projectRoutes = require('./routes/projects');
 const indexRoutes = require('./routes/index');
 const searchRoutes = require('./routes/search');
+const db = require("./models/db");
+const { promisify } = require('util');
+const dbGet = promisify(db.get.bind(db));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -18,6 +21,16 @@ app.use(session({
   store: new SQLiteStore({ db: 'sessions.db', dir: './db' }),
   cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 день
 }));
+
+app.use(async (req, res, next) => {
+  if (req.session.user) {
+    const user = await dbGet(`SELECT * FROM users WHERE id = ?`, req.session.user.id);
+    res.locals.user = user;
+  } else {
+    res.locals.user = null;
+  }
+  next();
+});
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

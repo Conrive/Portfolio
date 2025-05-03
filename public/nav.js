@@ -6,6 +6,20 @@ const filterButtons = document.querySelectorAll('.filter-btn');
 
 let currentFilter = 'all';
 
+function toggleUserMenu() {
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('hidden');
+}
+
+// Закрытие меню при клике вне его
+document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('userDropdown');
+    const avatar = document.querySelector('img[alt="avatar"]');
+    if (dropdown && !dropdown.contains(e.target) && e.target !== avatar) {
+        dropdown.classList.add('hidden');
+    }
+});
+
 searchInput.addEventListener('focus', () => {
     searchResults.classList.remove('hidden');
 });

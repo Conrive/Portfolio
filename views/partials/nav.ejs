@@ -1,52 +1,69 @@
-<nav class="w-full flex justify-between items-center px-6 py-4 bg-white shadow-md gap-4 relative z-50">
+<nav class="w-full z-50 bg-white shadow-md relative flex">
     <!-- Логотип -->
-    <div class="text-2xl font-bold text-gray-800">
-        Portfol.io
+    <div class="text-2xl font-bold text-gray-800 w-1/8 px-6 py-4 gap-4">
+        <a href="/">Portfol.io</a>
     </div>
 
-    <!-- Навигационные кнопки -->
-    <div class="flex gap-8 text-gray-700 font-medium">
-        <a href="/" class="hover:text-blue-600 transition">Главная</a>
-        <a href="/profile" class="hover:text-blue-600 transition">Профиль</a>
-        <a href="/about" class="hover:text-blue-600 transition">О нас</a>
-    </div>
+    <div class="flex justify-between items-center px-6 py-4 gap-4 relative w-7/8">
+        <!-- Навигационные кнопки -->
+        <div class="flex gap-8 text-gray-700 font-medium">
+            <a href="/" class="hover:text-blue-600 transition">Главная</a>
+            <a href="/about" class="hover:text-blue-600 transition">О нас</a>
+        </div>
 
-    <!-- Поиск и выход -->
-    <div class="flex items-center gap-4 relative">
-        <!-- Поле поиска -->
-        <div class="relative">
-            <input id="searchInput" type="text" placeholder="Поиск..." autocomplete="off"
-                   class="pl-4 pr-10 py-1 rounded-md bg-gray-100 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-            />
-            <svg class="w-5 h-5 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
-                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7 7 0 1010 17a7 7 0 006.65-4.35z"/>
-            </svg>
+        <!-- Поиск и выход -->
+        <div class="flex items-center gap-4 relative">
+            <!-- Поле поиска -->
+            <div class="relative">
+                <input id="searchInput" type="text" placeholder="Поиск..." autocomplete="off"
+                       class="pl-4 pr-10 py-1 rounded-md bg-gray-100 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                />
+                <svg class="w-5 h-5 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                     fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7 7 0 1010 17a7 7 0 006.65-4.35z"/>
+                </svg>
 
-            <!-- Выпадающее окно -->
-            <div id="searchResults" class="hidden absolute top-full right-0 mt-2 w-96 max-h-[50vh] bg-white shadow-lg rounded-md overflow-y-auto border border-gray-200 z-40">
-                <!-- Фильтры -->
-                <div class="flex justify-between px-4 py-2 border-b border-gray-300 bg-gray-50 sticky top-0">
-                    <button class="filter-btn active" data-filter="all">Все</button>
-                    <button class="filter-btn" data-filter="users">Пользователи</button>
-                    <button class="filter-btn" data-filter="projects">Проекты</button>
-                </div>
-
-                <div class="px-4 py-2">
-                    <!-- Динамический список -->
-                    <div id="searchUsers" class="mb-4">
-                        <h4 class="font-semibold text-gray-600 mb-1">Пользователи</h4>
-                        <ul class="space-y-1 text-sm text-gray-800"></ul>
+                <!-- Выпадающее окно -->
+                <div id="searchResults" class="hidden absolute top-full right-0 mt-2 w-96 max-h-[50vh] bg-white shadow-lg rounded-md overflow-y-auto border border-gray-200 z-40">
+                    <!-- Фильтры -->
+                    <div class="flex justify-between px-4 py-2 border-b border-gray-300 bg-gray-50 sticky top-0">
+                        <button class="filter-btn active" data-filter="all">Все</button>
+                        <button class="filter-btn" data-filter="users">Пользователи</button>
+                        <button class="filter-btn" data-filter="projects">Проекты</button>
                     </div>
-                    <div id="searchProjects">
-                        <h4 class="font-semibold text-gray-600 mb-1">Проекты</h4>
-                        <ul class="space-y-1 text-sm text-gray-800"></ul>
+
+                    <div class="px-4 py-2">
+                        <!-- Динамический список -->
+                        <div id="searchUsers" class="mb-4">
+                            <h4 class="font-semibold text-gray-600 mb-1">Пользователи</h4>
+                            <ul class="space-y-1 text-sm text-gray-800"></ul>
+                        </div>
+                        <div id="searchProjects">
+                            <h4 class="font-semibold text-gray-600 mb-1">Проекты</h4>
+                            <ul class="space-y-1 text-sm text-gray-800"></ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <a href="/logout" class="text-red-500 font-semibold hover:underline no-underline">Выйти</a>
+
+            <% if (user) { %>
+                <div class="relative">
+                    <img src="<%= user.avatar || '/default-avatar.png' %>" alt="avatar"
+                         class="w-10 h-10 rounded-full cursor-pointer border-2 border-gray-300"
+                         onclick="toggleUserMenu()" />
+
+                    <div id="userDropdown" class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-md hidden z-50">
+                        <a href="/profile" class="block px-4 py-2 hover:bg-gray-100 text-sm">Профиль</a>
+                        <form action="/logout">
+                            <button class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-500">Выйти</button>
+                        </form>
+                    </div>
+                </div>
+            <% } else { %>
+                <a href="/login" class="text-blue-600 font-semibold hover:underline">Вход</a>
+            <% } %>
+        </div>
     </div>
 </nav>
 
