@@ -11,41 +11,41 @@
 
     <!-- Шапка профиля -->
     <div class="relative bg-white shadow">
-        <% if (user.cover) { %>
-            <img src="<%= user.cover %>" alt="Обложка" class="w-full h-48 object-cover rounded-b-md">
+        <% if (profileUser.cover) { %>
+            <img src="<%= profileUser.cover %>" alt="Обложка" class="w-full h-48 object-cover rounded-b-md">
         <% } else { %>
             <div class="w-full h-48 bg-gradient-to-r from-blue-500 to-purple-500 rounded-b-md"></div>
         <% } %>
 
         <div class="absolute top-32 left-1/2 transform -translate-x-1/2 text-center">
-            <% if (user.avatar) { %>
-                <img src="<%= user.avatar %>" alt="Аватар" class="w-32 h-32 rounded-full border-4 border-white mx-auto shadow-lg">
+            <% if (profileUser.avatar) { %>
+                <img src="<%= profileUser.avatar %>" alt="Аватар" class="w-32 h-32 rounded-full border-4 border-white mx-auto shadow-lg">
             <% } else { %>
                 <div class="w-32 h-32 bg-gray-300 rounded-full border-4 border-white mx-auto shadow-lg flex items-center justify-center text-2xl text-white">
-                    <%= user.name ? user.name[0] : '?' %>
+                    <%= profileUser.name ? profileUser.name[0] : '?' %>
                 </div>
             <% } %>
-            <h1 class="text-2xl font-bold mt-2"><%= user.name %></h1>
+            <h1 class="text-2xl font-bold mt-2"><%= profileUser.name %></h1>
         </div>
     </div>
 
     <!-- Контент -->
     <div class="max-w-4xl mx-auto mt-32 p-4">
         <div class="mb-6" style="margin-top: -40px;">
-            <% if (user.bio) { %>
+            <% if (profileUser.bio) { %>
                 <p class="text-gray-600 text-sm mt-1 px-4"><%= user.bio %></p>
             <% } %>
         </div>
         <!-- Соцсети -->
         <div class="flex justify-center space-x-4 mb-6">
-            <% if (user.github) { %>
-                <a href="<%= user.github %>" target="_blank" class="text-gray-700 hover:text-black font-medium">GitHub</a>
+            <% if (profileUser.github) { %>
+                <a href="<%= profileUser.github %>" target="_blank" class="text-gray-700 hover:text-black font-medium">GitHub</a>
             <% } %>
-            <% if (user.telegram) { %>
-                <a href="<%= user.telegram %>" target="_blank" class="text-blue-500 hover:text-blue-700 font-medium">Telegram</a>
+            <% if (profileUser.telegram) { %>
+                <a href="<%= profileUser.telegram %>" target="_blank" class="text-blue-500 hover:text-blue-700 font-medium">Telegram</a>
             <% } %>
-            <% if (user.linkedin) { %>
-                <a href="<%= user.linkedin %>" target="_blank" class="text-blue-700 hover:text-blue-900 font-medium">LinkedIn</a>
+            <% if (profileUser.linkedin) { %>
+                <a href="<%= profileUser.linkedin %>" target="_blank" class="text-blue-700 hover:text-blue-900 font-medium">LinkedIn</a>
             <% } %>
         </div>
 
@@ -58,7 +58,7 @@
                 <% } %>
                 <!-- Кнопка редактирования -->
                 <% if (isOwner) { %>
-                    <a href="/profile/<%= user.id %>/edit" class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600">Редактировать информацию</a>
+                    <a href="/profile/<%= profileUser.id %>/edit" class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600">Редактировать информацию</a>
                 <% } %>
             </div>
 

@@ -1,10 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
-const multer = require('multer');
-const crypto = require('crypto');
-const path = require('path');
-const fs = require('fs');
+const { deleteFileIfExists, upload, storage } = require('../public/deleteFile');
 const { promisify } = require('util');
 
 const dbAll = promisify(db.all.bind(db));
@@ -18,46 +15,6 @@ router.get('/add', (req, res) => {
     }
     res.render('addProject');
 });
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/uploads/');
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        const uniqueName = crypto.randomUUID() + ext;
-        cb(null, uniqueName);
-    }
-});
-
-const upload = multer({
-    storage,
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        cb(null, allowedTypes.includes(file.mimetype));
-    },
-    limits: { fileSize: 5 * 1024 * 1024 } // 5 MB
-})
-
-function deleteFileIfExists(filePath) {
-    if (!filePath || !filePath.startsWith('/uploads/')) return;
-
-    const absolutePath = path.join(__dirname, '../public', filePath);
-
-    fs.access(absolutePath, fs.constants.F_OK, (err) => {
-        if (!err) {
-            fs.unlink(absolutePath, (err) => {
-                if (err) {
-                    console.error('Ошибка при удалении:', err.message);
-                } else {
-                    console.log('Удалён файл:', absolutePath);
-                }
-            });
-        } else {
-            console.warn('Файл не найден для удаления:', absolutePath);
-        }
-    });
-}
 
 // Обработка формы добавления проекта
 router.post('/add', (req, res) => {
@@ -80,7 +37,7 @@ router.post('/add', (req, res) => {
             if (err) {
                 return res.render('addProject', { error: "Ошибка при добавлении проекта" });
             }
-            res.redirect('/profile');
+            res.redirect(`/profile/${req.session.user.id}`);
         }
     );
 });
@@ -96,7 +53,7 @@ router.get('/edit/:id', (req, res) => {
         [projectId, req.session.user.id],
         (err, project) => {
             if (err || !project) {
-                return res.redirect('/profile');
+                return res.redirect(`/profile/${req.session.user.id}`);
             }
             res.render('editProject', { project });
         }
@@ -115,7 +72,7 @@ router.post('/edit/:id', upload.single('cover'), (req, res) => {
 
     db.get('SELECT cover FROM projects WHERE id = ? AND user_id = ?', [projectId, userId], (err, project) => {
         if (err || !project) {
-            return res.redirect('/profile');
+            return res.redirect(`/profile/${req.session.user.id}`);
         }
 
         const newCover = req.file ? `/uploads/${req.file.filename}` : project.cover;
@@ -134,7 +91,7 @@ router.post('/edit/:id', upload.single('cover'), (req, res) => {
                         error: "Ошибка при обновлении"
                     });
                 }
-                res.redirect('/profile');
+                res.redirect(`/profile/${req.session.user.id}`);
             }
         );
     });
@@ -148,11 +105,55 @@ router.post('/delete/:id', (req, res) => {
     const projectId = req.params.id;
     const userId = req.session.user.id;
 
-    db.run('DELETE FROM projects WHERE id = ? AND user_id = ?', [projectId, userId], function (err) {
-        if (err) {
-            return res.redirect('/profile');
+    // Получаем проект перед удалением
+    db.get('SELECT * FROM projects WHERE id = ? AND user_id = ?', [projectId, userId], (err, project) => {
+        if (err || !project) {
+            return res.redirect(`/profile/${userId}`);
         }
-        res.redirect('/profile');
+
+        // Удаляем обложку
+        if (project.cover) deleteFileIfExists(project.cover);
+
+        // Разбор layout
+        let parsedLayout;
+
+        try {
+            let layoutRaw = project.layout;
+
+            if (typeof layoutRaw === 'string') {
+                parsedLayout = JSON.parse(layoutRaw); // первый парсинг
+
+                if (typeof parsedLayout === 'string') {
+                    parsedLayout = JSON.parse(parsedLayout); // второй парсинг
+                }
+            } else {
+                parsedLayout = layoutRaw;
+            }
+
+            if (parsedLayout?.elements && Array.isArray(parsedLayout.elements)) {
+                parsedLayout.elements.forEach(el => {
+                    if (el.tag === 'img' && typeof el.src === 'string' && el.src.includes('/uploads/')) {
+                        const match = el.src.match(/\/uploads\/[^"' ]+/);
+                        if (match && match[0]) {
+                            deleteFileIfExists(match[0]);
+                        }
+                    }
+                });
+            } else {
+                console.log('layout.elements отсутствует или не массив');
+            }
+
+        } catch (e) {
+            console.error(`Ошибка при парсинге layout проекта ${projectId}:`, e.message);
+        }
+
+        // Удаляем проект
+        db.run('DELETE FROM projects WHERE id = ? AND user_id = ?', [projectId, userId], (err) => {
+            if (err) {
+                console.error('Ошибка при удалении проекта:', err.message);
+            }
+            res.redirect(`/profile/${userId}`);
+        });
     });
 });
 
@@ -229,7 +230,6 @@ router.get('/api/project/:id/layout', async (req, res) => {
         res.status(500).json({ error: 'Ошибка при загрузке проекта' });
     }
 });
-
 
 // Сохранение layout
 router.post('/api/project/:id/layout', async (req, res) => {

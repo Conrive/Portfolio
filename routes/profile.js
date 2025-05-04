@@ -2,10 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getUserProjects } = require('../models/projectModel');
 const db = require('../models/db');
-const multer = require('multer');
-const crypto = require('crypto');
-const path = require('path');
-const fs = require('fs');
+const { deleteFileIfExists, upload, storage } = require('../public/deleteFile');
 
 router.get('/', async (req, res) => {
     if (!req.session || !req.session.user) {
@@ -32,51 +29,10 @@ router.get('/:id', async (req, res) => {
         const projects = await getUserProjects(profileId);
         const isOwner = viewer && viewer.id === user.id;
 
-        res.render('profile', { user, projects, isOwner });
+        res.render('profile', { profileUser: user, projects, isOwner });
     });
 });
 
-// Настройка хранения загруженных файлов
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/uploads/');
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname); // .jpg, .png
-        const uniqueName = crypto.randomUUID() + ext;
-        cb(null, uniqueName);
-    }
-});
-
-const upload = multer({
-    storage,
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        cb(null, allowedTypes.includes(file.mimetype));
-    },
-    limits: { fileSize: 5 * 1024 * 1024 } // 5 MB
-});
-
-//Удаление старого файла
-function deleteFileIfExists(filePath) {
-    if (!filePath || !filePath.startsWith('/uploads/')) return;
-
-    const absolutePath = path.join(__dirname, '../public', filePath);
-
-    fs.access(absolutePath, fs.constants.F_OK, (err) => {
-        if (!err) {
-            fs.unlink(absolutePath, (err) => {
-                if (err) {
-                    console.error('Ошибка при удалении:', err.message);
-                } else {
-                    console.log('Удалён файл:', absolutePath);
-                }
-            });
-        } else {
-            console.warn('Файл не найден для удаления:', absolutePath);
-        }
-    });
-}
 // Форма редактирования профиля
 router.get('/:id/edit', (req, res) => {
     if (!req.session || !req.session.user) {
@@ -85,7 +41,7 @@ router.get('/:id/edit', (req, res) => {
 
     db.get('SELECT * FROM users WHERE id = ?', [req.session.user.id], (err, user) => {
         if (err || !user) {
-            return res.redirect('/profile/:id');
+            return res.redirect(`/profile/${req.session.user.id}`);
         }
         res.render('editProfile', { user });
     });
