@@ -33,7 +33,7 @@ router.post('/login', async (req, res) => {
         telegram: user.telegram,
         linkedin: user.linkedin,
         role: user.role };
-    res.redirect('/profile');
+    res.redirect('/');
 });
 
 router.get('/register', (req, res) => {
@@ -52,7 +52,9 @@ router.post('/register', async (req, res) => {
 });
 
 router.get('/logout', (req, res) => {
-    req.session.destroy(() => res.redirect('/login'));
+    req.session.destroy(() => {
+        res.redirect('/login');
+    });
 });
 
 module.exports = router;

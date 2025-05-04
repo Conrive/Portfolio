@@ -58,7 +58,7 @@
                 <% } %>
                 <!-- Кнопка редактирования -->
                 <% if (isOwner) { %>
-                    <a href="/profile/edit" class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600">Редактировать информацию</a>
+                    <a href="/profile/<%= user.id %>/edit" class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600">Редактировать информацию</a>
                 <% } %>
             </div>
 

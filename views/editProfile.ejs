@@ -10,7 +10,7 @@
     <h2 class="text-2xl font-bold mb-4">Редактировать профиль</h2>
 
 
-    <form action="/profile/edit" method="POST" enctype="multipart/form-data" class="space-y-4">
+    <form action="/profile/<%= user.id %>/edit" method="POST" enctype="multipart/form-data" class="space-y-4">
         <div>
             <label class="block text-sm font-medium">Имя:</label>
             <input type="text" name="name" value="<%= user.name %>" class="w-full p-2 border rounded" required>
@@ -52,10 +52,10 @@
             <% } %>
         </div>
 
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Сохранить</button>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full" onclick="alert('Данные обновлены');">Сохранить</button>
     </form>
 
-    <a href="/profile" class="block text-center text-blue-500 mt-4">Назад в профиль</a>
+    <a href="/profile/<%= user.id %>" class="block text-center text-blue-500 mt-4">Назад в профиль</a>
 </div>
 </body>
 </html>

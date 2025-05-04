@@ -77,24 +77,22 @@ function deleteFileIfExists(filePath) {
         }
     });
 }
-
-
 // Форма редактирования профиля
-router.get('/edit', (req, res) => {
+router.get('/:id/edit', (req, res) => {
     if (!req.session || !req.session.user) {
         return res.redirect('/login');
     }
 
     db.get('SELECT * FROM users WHERE id = ?', [req.session.user.id], (err, user) => {
         if (err || !user) {
-            return res.redirect('/profile');
+            return res.redirect('/profile/:id');
         }
         res.render('editProfile', { user });
     });
 });
 
 // Обновление профиля
-router.post('/edit', upload.fields([{ name: 'avatar' }, { name: 'cover' }]), (req, res) => {
+router.post('/:id/edit', upload.fields([{ name: 'avatar' }, { name: 'cover' }]), (req, res) => {
     if (!req.session || !req.session.user) {
         return res.redirect('/login');
     }
@@ -129,14 +127,16 @@ router.post('/edit', upload.fields([{ name: 'avatar' }, { name: 'cover' }]), (re
             req.session.user.linkedin = linkedin;
             req.session.user.avatar = avatar;
             req.session.user.cover = cover;
-
-            res.redirect('/profile');
         }
     );
 });
 
+
+
 router.get('/logout', (req, res) => {
-    req.session.destroy(() => res.redirect('/login'));
+    req.session.destroy(() => {
+        res.redirect('/login');
+    });
 });
 
 module.exports = router;
