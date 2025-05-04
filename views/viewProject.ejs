@@ -21,9 +21,23 @@
     </style>
 </head>
 <body>  <%- include('partials/nav') %>
-<div id="canvas"></div>
 
+<main class="w-full flex h-fit mt-20">
+    <aside class="w-1/5 p-4 space-y-2 flex flex-col items-start">
+        <button class="bg-red-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-red-600" onclick="exportCanvasToPDF()">Экспортировать в PDF</button>
+
+        <button class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600"><a href="/profile">Вернуться в профиль</a></button>
+    </aside>
+
+    <div class="flex w-4/5 items-center justify-center">
+        <div id="canvas"></div>
+    </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 <script src="/editor.js"></script>
+<script src="/pdfExport.js"></script>
 <script>
     // Переопределяем функции редактирования, чтобы они не срабатывали
     window.makeDraggable = () => {};
