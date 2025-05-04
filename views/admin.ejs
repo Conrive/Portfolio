@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body>
+<%- include('partials/nav') %>
+
+<div class="max-w-7xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">Admin Panel</h1>
+
+    <!-- Users -->
+    <div>
+        <h2 class="text-2xl font-semibold mb-4 text-center">Users</h2>
+        <% users.forEach(user => { %>
+            <div class="flex items-center justify-center gap-4 mb-4">
+                <form action="/admin/user/update/<%= user.id %>" method="POST" class="flex items-center gap-4 mb-2">
+                    <input name="name" value="<%= user.name %>" class="border p-1 rounded" />
+                    <select name="role" class="border p-1 rounded">
+                        <option value="student" <%= user.role === 'student' ? 'selected' : '' %>>Student</option>
+                        <option value="teacher" <%= user.role === 'teacher' ? 'selected' : '' %>>Teacher</option>
+                        <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                    </select>
+                    <button class="bg-blue-500 text-white px-3 py-1 rounded" type="submit" onclick="alert('Суспег!')">Save</button>
+                </form>
+                <form action="/admin/user/delete/<%= user.id %>" method="POST" onsubmit="return confirm('Delete this user?')" class="inline">
+                    <button class="text-red-500 underline text-sm" type="submit">Delete</button>
+                </form>
+            </div>
+        <% }) %>
+    </div>
+
+    <hr class="my-6" />
+
+    <!-- Projects -->
+    <div>
+        <h2 class="text-2xl font-semibold mb-4 text-center">Projects</h2>
+        <% projects.forEach(project => { %>
+            <div class="flex items-center justify-center gap-4 mb-4">
+                <form action="/admin/project/update/<%= project.id %>" method="POST" class="flex items-center gap-4 mb-2">
+                    <input name="title" value="<%= project.title %>" class="border p-1 rounded" />
+                    <input name="description" value="<%= project.description %>" class="border p-1 rounded w-1/2" />
+                    <button class="bg-blue-500 text-white px-3 py-1 rounded" type="submit" onclick="alert('Суспег!')">Save</button>
+                </form>
+                <form action="/admin/project/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Delete this project?')" class="inline">
+                    <button class="text-red-500 underline text-sm" type="submit">Delete</button>
+                </form>
+            </div>
+        <% }) %>
+    </div>
+</div>
+</body>
+</html>

@@ -131,8 +131,6 @@ router.post('/:id/edit', upload.fields([{ name: 'avatar' }, { name: 'cover' }]),
     );
 });
 
-
-
 router.get('/logout', (req, res) => {
     req.session.destroy(() => {
         res.redirect('/login');

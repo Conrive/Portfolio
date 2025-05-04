@@ -9,6 +9,7 @@ const projectRoutes = require('./routes/projects');
 const indexRoutes = require('./routes/index');
 const searchRoutes = require('./routes/search');
 const db = require("./models/db");
+const checkAdmin = require('./models/checkAdmin');
 const { promisify } = require('util');
 const dbGet = promisify(db.get.bind(db));
 
@@ -42,5 +43,6 @@ app.use('/', searchRoutes);
 app.use('/', authRoutes);
 app.use('/', projectRoutes);
 app.use('/', indexRoutes);
+app.use('/admin', require('./routes/admin'));
 
 app.listen(3000, () => console.log('Сервер запущен на http://localhost:3000'));

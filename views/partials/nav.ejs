@@ -55,6 +55,9 @@
 
                     <div id="userDropdown" class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-md hidden z-50">
                         <a href="/profile/<%= user.id %>" class="block px-4 py-2 hover:bg-gray-100 text-sm">Профиль</a>
+                        <% if (user.role === 'admin') { %>
+                            <a href="/admin" id="admin-panel" class="block px-4 py-2 hover:bg-gray-100 text-sm">Админ-панель</a>
+                        <% } %>
                         <form action="/logout">
                             <button class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-500">Выйти</button>
                         </form>
