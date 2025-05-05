@@ -21,9 +21,9 @@
                 <form action="/admin/user/update/<%= user.id %>" method="POST" class="flex items-center gap-4 mb-2">
                     <input name="name" value="<%= user.name %>" class="border p-1 rounded" />
                     <select name="role" class="border p-1 rounded">
-                        <option value="student" <%= user.role === 'student' ? 'selected' : '' %>>Student</option>
-                        <option value="teacher" <%= user.role === 'teacher' ? 'selected' : '' %>>Teacher</option>
-                        <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                        <option value="student" <%= user.role === 1 ? 'selected' : '' %>>Student</option>
+                        <option value="teacher" <%= user.role === 3 ? 'selected' : '' %>>Teacher</option>
+                        <option value="admin" <%= user.role === 2 ? 'selected' : '' %>>Admin</option>
                     </select>
                     <button class="bg-blue-500 text-white px-3 py-1 rounded" type="submit" onclick="alert('Суспег!')">Save</button>
                 </form>

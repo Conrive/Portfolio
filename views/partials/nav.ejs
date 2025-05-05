@@ -4,15 +4,19 @@
         <a href="/">Portfol.io</a>
     </div>
 
-    <div class="flex justify-between items-center px-6 py-4 gap-4 relative w-7/8">
-        <!-- Навигационные кнопки -->
-        <div class="flex gap-8 text-gray-700 font-medium">
-            <a href="/" class="hover:text-blue-600 transition">Главная</a>
-            <a href="/about" class="hover:text-blue-600 transition">О нас</a>
-        </div>
-
+    <div class="flex justify-end items-center px-6 py-4 gap-4 relative w-7/8">
         <!-- Поиск и выход -->
         <div class="flex items-center gap-4 relative">
+            <!-- Навигационные кнопки -->
+            <div class="flex gap-8 text-gray-700 font-medium">
+                <a href="/" class="hover:text-blue-600 transition rounded-2xl  hover:bg-gray-300">
+                    <svg class="w-5 h-5 text-gray-500 pointer-events-none"
+                         fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M 12 2.0996094 L 1 12 L 4 12 L 4 21 L 11 21 L 11 15 L 13 15 L 13 21 L 20 21 L 20 12 L 23 12 L 12 2.0996094 z M 12 4.7910156 L 18 10.191406 L 18 11 L 18 19 L 15 19 L 15 13 L 9 13 L 9 19 L 6 19 L 6 10.191406 L 12 4.7910156 z"/>
+                    </svg>
+                </a>
+            </div>
+
             <!-- Поле поиска -->
             <div class="relative">
                 <input id="searchInput" type="text" placeholder="Поиск..." autocomplete="off"
@@ -20,7 +24,7 @@
                 />
                 <svg class="w-5 h-5 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
                      fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7 7 0 1010 17a7 7 0 006.65-4.35z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M 13 3 C 7.4889971 3 3 7.4889971 3 13 C 3 18.511003 7.4889971 23 13 23 C 15.396508 23 17.597385 22.148986 19.322266 20.736328 L 25.292969 26.707031 A 1.0001 1.0001 0 1 0 26.707031 25.292969 L 20.736328 19.322266 C 22.148986 17.597385 23 15.396508 23 13 C 23 7.4889971 18.511003 3 13 3 z M 13 5 C 17.430123 5 21 8.5698774 21 13 C 21 17.430123 17.430123 21 13 21 C 8.5698774 21 5 17.430123 5 13 C 5 8.5698774 8.5698774 5 13 5 z"/>
                 </svg>
 
                 <!-- Выпадающее окно -->
@@ -55,7 +59,7 @@
 
                     <div id="userDropdown" class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-md hidden z-50">
                         <a href="/profile/<%= user.id %>" class="block px-4 py-2 hover:bg-gray-100 text-sm">Профиль</a>
-                        <% if (user.role === 'admin') { %>
+                        <% if (user.role === 2) { %>
                             <a href="/admin" id="admin-panel" class="block px-4 py-2 hover:bg-gray-100 text-sm">Админ-панель</a>
                         <% } %>
                         <form action="/logout">
