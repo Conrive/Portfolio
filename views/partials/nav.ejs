@@ -53,8 +53,8 @@
 
             <% if (user) { %>
                 <div class="relative">
-                    <img src="<%= user.avatar || '/default-avatar.png' %>" alt="avatar"
-                         class="w-10 h-10 rounded-full cursor-pointer border-2 border-gray-300"
+                    <img src="<%= user.avatar || '/uploads/default-avatar-hq.png' %>" alt="avatar"
+                         class="w-8 h-8 rounded-full cursor-pointer border-2 border-gray-300 "
                          onclick="toggleUserMenu()" />
 
                     <div id="userDropdown" class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-md hidden z-50">

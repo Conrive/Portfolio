@@ -17,14 +17,14 @@ router.get('/search', async (req, res) => {
 
         if (!filter || filter === 'users' || filter === 'all') {
             users = await dbAll(
-                `SELECT * FROM users WHERE name LIKE ? COLLATE NOCASE OR bio LIKE ? COLLATE NOCASE`,
+                `SELECT * FROM users WHERE name LIKE ? COLLATE NOCASE OR bio LIKE ? COLLATE NOCASE LIMIT 7`,
                 [`%${q}%`, `%${q}%`]
             );
         }
 
         if (!filter || filter === 'projects' || filter === 'all') {
             projects = await dbAll(
-                `SELECT * FROM projects WHERE title LIKE ? COLLATE NOCASE OR description LIKE ? COLLATE NOCASE`,
+                `SELECT * FROM projects WHERE title LIKE ? COLLATE NOCASE OR description LIKE ? COLLATE NOCASE LIMIT 7`,
                 [`%${q}%`, `%${q}%`]
             );
         }
@@ -53,14 +53,14 @@ router.get('/api/search', async (req, res) => {
 
         if (!filter || filter === 'users' || filter === 'all') {
             users = await dbAll(
-                `SELECT * FROM users WHERE name LIKE ? COLLATE NOCASE OR bio LIKE ? COLLATE NOCASE`,
+                `SELECT * FROM users WHERE name LIKE ? COLLATE NOCASE OR bio LIKE ? COLLATE NOCASE LIMIT 7`,
                 [`%${q}%`, `%${q}%`]
             );
         }
 
         if (!filter || filter === 'projects' || filter === 'all') {
             projects = await dbAll(
-                `SELECT * FROM projects WHERE title LIKE ? COLLATE NOCASE OR description LIKE ? COLLATE NOCASE`,
+                `SELECT * FROM projects WHERE title LIKE ? COLLATE NOCASE OR description LIKE ? COLLATE NOCASE LIMIT 7`,
                 [`%${q}%`, `%${q}%`]
             );
         }

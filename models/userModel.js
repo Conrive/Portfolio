@@ -13,22 +13,21 @@ async function createUser(name, email, password, role = 1) {
     });
 }
 
-async function findUserByEmail(email) {
+function findUserBy(field, value) {
     return new Promise((resolve, reject) => {
-        db.get('SELECT * FROM users WHERE email = ?', [email], (err, row) => {
+        db.get(`SELECT * FROM users WHERE ${field} = ?`, [value], (err, row) => {
             if (err) reject(err);
             else resolve(row);
         });
     });
 }
 
-async function findUserByUsername(username) {
-    return new Promise((resolve, reject) => {
-        db.get('SELECT * FROM users WHERE name = ?', [username], (err, row) => {
-            if (err) reject(err);
-            else resolve(row);
-        })
-    })
+async function findUserByEmail(email) {
+    return findUserBy('email', email);
+}
+
+async function findUserByUsername(name) {
+    return findUserBy('name', name);
 }
 
 module.exports = { createUser, findUserByEmail, findUserByUsername };

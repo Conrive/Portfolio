@@ -41,6 +41,11 @@ filterButtons.forEach(button => {
 
 let searchTimeout;
 
+const highlight = (text, q) => {
+    const safeQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // экранируем спецсимволы RegExp
+    return text.replace(new RegExp(`(${safeQuery})`, 'gi'), '<mark class="bg-gray-200">$1</mark>');
+};
+
 async function triggerSearch() {
     const query = searchInput.value.trim();
 
@@ -94,6 +99,7 @@ filterButtons.forEach(btn => {
 function renderResults(data) {
     const users = Array.isArray(data.users) ? data.users : [];
     const projects = Array.isArray(data.projects) ? data.projects : [];
+    const query = searchInput.value.trim();
 
     userList.innerHTML = '';
     projectList.innerHTML = '';
@@ -104,7 +110,7 @@ function renderResults(data) {
             li.innerHTML = `
                 <a href="/profile/${user.id}" class="flex items-center gap-3 hover:bg-gray-100 p-2 rounded">
                     <img src="${user.avatar || '/default-avatar.png'}" alt="avatar" class="w-10 h-10 rounded-full object-cover border">
-                    <span class="font-semibold">${user.name}</span>
+                    <span class="font-semibold">${highlight(user.name, query)}</span>
                 </a>
             `;
             userList.appendChild(li);
@@ -116,8 +122,8 @@ function renderResults(data) {
             const li = document.createElement('li');
             li.innerHTML = `
                 <a href="/project/${project.id}/view" class="block hover:bg-gray-100 p-2 rounded">
-                    <div class="font-semibold">${project.title}</div>
-                    <div class="text-sm text-gray-600 overflow-hidden whitespace-nowrap text-ellipsis">${project.description || 'Без описания'}</div>
+                    <div class="font-semibold">${highlight(project.title, query)}</div>
+                    <div class="text-sm text-gray-600 overflow-hidden whitespace-nowrap text-ellipsis">${highlight(project.description, query) || 'Без описания'}</div>
                 </a>
             `;
             projectList.appendChild(li);

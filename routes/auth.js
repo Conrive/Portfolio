@@ -24,10 +24,8 @@ const loginLimiter = rateLimit({
     }
 });
 
-
 router.post('/login', loginLimiter, async (req, res) => {
     const { identifier, password } = req.body;
-
 
     // Проверка reCAPTCHA
     //const secretKey = ''; // Вставить после поставления на хост
@@ -51,7 +49,6 @@ router.post('/login', loginLimiter, async (req, res) => {
     //    return res.render('login', { error: 'Ошибка проверки reCAPTCHA' });
     //}
 
-
     let user;
 
     if (identifier.includes('@')) {
@@ -61,6 +58,7 @@ router.post('/login', loginLimiter, async (req, res) => {
     }
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
+        await bcrypt.compare('dummy', '$2b$10$abcdefghijklmnopqrstuv');
         return res.status(401).render('login', {
             error: 'Неверный email или пароль',
             csrfToken: req.csrfToken()
@@ -93,8 +91,13 @@ router.post('/register', async (req, res) => {
         return res.render('register', { error: 'Email уже используется' });
     }
 
-    await createUser(name, email, password);
-    res.redirect('/login');
+    try {
+        await createUser(name, email, password);
+        res.redirect('/login');
+    } catch (err) {
+        console.log(err);
+        res.render('/register', { error: 'Ошибка регистрации' });
+    }
 });
 
 router.get('/logout', (req, res) => {
