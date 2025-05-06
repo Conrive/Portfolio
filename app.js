@@ -20,7 +20,12 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: new SQLiteStore({ db: 'sessions.db', dir: './db' }),
-  cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 день
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24,
+    httpOnly: true,
+    secure: false, //Потом поменять на true
+    sameSite: 'strict',
+  }
 }));
 
 app.use(async (req, res, next) => {
@@ -35,6 +40,21 @@ app.use(async (req, res, next) => {
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+const csrf = require('csurf');
+const csrfProtection = csrf({ cookie: false });
+
+app.use(csrfProtection);
+
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    console.warn('Нарушение CSRF-защиты:', req.ip, new Date().toISOString());
+    res.status(403).send('Форма устарела или недействительна. Перезагрузите страницу и попробуйте снова.');
+  } else {
+    next(err);
+  }
+});
+
 
 app.set('view engine', 'ejs');
 app.use('/profile', profileRoutes);

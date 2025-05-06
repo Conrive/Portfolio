@@ -13,7 +13,8 @@ router.get('/add', (req, res) => {
     if (!req.session || !req.session.user) {
         return res.redirect('/login');
     }
-    res.render('addProject');
+    const csrfToken = req.csrfToken();
+    res.render('addProject', {csrfToken});
 });
 
 // Обработка формы добавления проекта
@@ -55,7 +56,8 @@ router.get('/edit/:id', (req, res) => {
             if (err || !project) {
                 return res.redirect(`/profile/${req.session.user.id}`);
             }
-            res.render('editProject', { project });
+            const token = req.csrfToken();
+            res.render('editProject', { project, csrfToken: token });
         }
     );
 });
@@ -179,9 +181,11 @@ router.get('/project/:id/edit-page', (req, res) => {
             return res.status(404).send("Проект не найден");
         }
 
+        const token = req.csrfToken();
         res.render('editProjectPage', {
             project,
-            layout: project.layout ? JSON.parse(project.layout) : [] // если проект из БД, и у него есть layout
+            layout: project.layout ? JSON.parse(project.layout) : [], // если проект из БД, и у него есть layout
+        csrfToken: token
         });
     });
 });

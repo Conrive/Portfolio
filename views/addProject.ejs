@@ -10,6 +10,7 @@
     <h2 class="text-2xl font-bold mb-4">Добавить проект</h2>
 
     <form action="/projects/add" method="POST" class="space-y-4">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div>
             <label class="block text-sm font-medium">Название проекта:</label>
             <input type="text" name="title" class="w-full p-2 border rounded" required>

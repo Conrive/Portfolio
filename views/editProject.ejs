@@ -9,7 +9,8 @@
 <div class="max-w-md w-full bg-white p-6 rounded shadow-md">
     <h2 class="text-2xl font-bold mb-4">Редактировать проект</h2>
 
-    <form action="/projects/edit/<%= project.id %>" method="POST" class="space-y-4" enctype="multipart/form-data">
+    <form action="/projects/edit/<%= project.id %>/?_csrf=<%=csrfToken%>" method="POST" class="space-y-4" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div>
             <label class="block text-sm font-medium">Название проекта:</label>
             <input type="text" name="title" value="<%= project.title %>" class="w-full p-2 border rounded" required>

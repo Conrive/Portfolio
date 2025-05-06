@@ -12,7 +12,8 @@ const dbAll = promisify(db.all.bind(db));
 router.get('/', checkAdmin, async (req, res) => {
     const users = await dbAll('SELECT * FROM users');
     const projects = await dbAll('SELECT * FROM projects');
-    res.render('admin', { users, projects });
+    const token = req.csrfToken();
+    res.render('admin', { users, projects, csrfToken: token });
 });
 
 // Обновление пользователя

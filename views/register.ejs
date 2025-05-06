@@ -12,6 +12,7 @@
         <p class="text-red-500"><%= error %></p>
     <% } %>
     <form action="/register" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <input type="text" name="name" placeholder="Имя" required class="border p-2 w-full mb-2">
         <input type="email" name="email" placeholder="Email" required class="border p-2 w-full mb-2">
         <input type="password" name="password" placeholder="Пароль" required class="border p-2 w-full mb-2">

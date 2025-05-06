@@ -85,6 +85,7 @@
                                             <a href="/projects/edit/<%= project.id %>" class="bg-yellow-500 text-white px-3 py-1 rounded">Редактировать</a>
 
                                             <form action="/projects/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?');">
+                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                                 <button class="bg-red-500 text-white px-3 py-1 rounded">Удалить</button>
                                             </form>
                                         </div>

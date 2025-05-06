@@ -3,6 +3,8 @@ const router = express.Router();
 const { getUserProjects } = require('../models/projectModel');
 const db = require('../models/db');
 const { deleteFileIfExists, upload, storage } = require('../public/deleteFile');
+const csrf = require('csurf');
+const csrfProtection = csrf({ cookie: false });
 
 router.get('/', async (req, res) => {
     if (!req.session || !req.session.user) {
@@ -11,8 +13,8 @@ router.get('/', async (req, res) => {
 
     const user = req.session.user;
     const projects = await getUserProjects(user.id); // Получаем проекты пользователя
-
-    res.render('profile', { user, projects, isOwner: true });
+    const token = req.csrfToken();
+    res.render('profile', { user, projects, isOwner: true, csrfToken: token });
 });
 
 router.get('/:id', async (req, res) => {
@@ -28,8 +30,8 @@ router.get('/:id', async (req, res) => {
 
         const projects = await getUserProjects(profileId);
         const isOwner = viewer && viewer.id === user.id;
-
-        res.render('profile', { profileUser: user, projects, isOwner });
+        const token = req.csrfToken();
+        res.render('profile', { profileUser: user, projects, isOwner, csrfToken: token });
     });
 });
 
@@ -43,15 +45,20 @@ router.get('/:id/edit', (req, res) => {
         if (err || !user) {
             return res.redirect(`/profile/${req.session.user.id}`);
         }
-        res.render('editProfile', { user });
+        const token = req.csrfToken();
+        console.log('profile', token);
+        res.render('editProfile', { user, csrfToken: token });
     });
 });
 
 // Обновление профиля
-router.post('/:id/edit', upload.fields([{ name: 'avatar' }, { name: 'cover' }]), (req, res) => {
-    if (!req.session || !req.session.user) {
-        return res.redirect('/login');
-    }
+router.post('/:id/edit',
+    upload.fields([{ name: 'avatar' }, { name: 'cover' }]),
+    (req, res) => {
+        console.log('✅ _csrf token in body:', req.body._csrf);
+        if (!req.session || !req.session.user) {
+            return res.redirect('/login');
+        }
 
     const { name, bio, github, telegram, linkedin } = req.body;
     let avatar = req.session.user.avatar;
@@ -83,6 +90,8 @@ router.post('/:id/edit', upload.fields([{ name: 'avatar' }, { name: 'cover' }]),
             req.session.user.linkedin = linkedin;
             req.session.user.avatar = avatar;
             req.session.user.cover = cover;
+
+            return res.redirect(`/profile/${req.session.user.id}`);
         }
     );
 });

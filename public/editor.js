@@ -3,6 +3,12 @@ let draggedElement = null;
 let offsetX = 0;
 let offsetY = 0;
 
+document.addEventListener('DOMContentLoaded', async () => {
+    window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const projectId = window.location.pathname.split('/')[2];
+    await loadCanvas(projectId);
+});
+
 function rgb2hex(rgb) {
     const result = rgb.match(/\d+/g);
     return result ? "#" + result.map(x => (+x).toString(16).padStart(2, "0")).join("") : "#ffffff";
@@ -572,6 +578,8 @@ function collectCanvasData() {
     };
 }
 
+window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
 async function saveCanvas() {
     const data = collectCanvasData();
     const projectId = window.location.pathname.split('/')[2];
@@ -581,6 +589,7 @@ async function saveCanvas() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'CSRF-Token': window.csrfToken
         },
         body: JSON.stringify({ layout: layoutData }),
     });
