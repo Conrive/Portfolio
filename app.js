@@ -9,9 +9,12 @@ const projectRoutes = require('./routes/projects');
 const indexRoutes = require('./routes/index');
 const searchRoutes = require('./routes/search');
 const db = require("./models/db");
-const checkAdmin = require('./models/checkAdmin');
+const validateInput = require('./models/validateInput');
 const { promisify } = require('util');
 const dbGet = promisify(db.get.bind(db));
+const csrf = require('csurf');
+const csrfProtection = csrf({ cookie: false });
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -40,9 +43,7 @@ app.use(async (req, res, next) => {
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-const csrf = require('csurf');
-const csrfProtection = csrf({ cookie: false });
+app.use(validateInput);
 
 app.use(csrfProtection);
 

@@ -14,7 +14,7 @@ const loginLimiter = rateLimit({
     max: 5,
     standardHeaders: true,
     legacyHeaders: false,
-    handler: (req, res, next, options) => {
+    handler: (req, res) => {
         const ip = req.ip;
         const time = new Date().toISOString();
         console.warn(`[LOGIN RATE LIMIT] ${ip} превысил лимит входа — ${time}`);
@@ -61,7 +61,10 @@ router.post('/login', loginLimiter, async (req, res) => {
     }
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.render('login', { error: 'Неверный email или пароль' });
+        return res.status(401).render('login', {
+            error: 'Неверный email или пароль',
+            csrfToken: req.csrfToken()
+        });
     }
 
     req.session.user = {
@@ -79,7 +82,8 @@ router.post('/login', loginLimiter, async (req, res) => {
 });
 
 router.get('/register', (req, res) => {
-    res.render('register', { error: null });
+    const token = req.csrfToken();
+    res.render('register', { error: null, csrfToken: token });
 });
 
 router.post('/register', async (req, res) => {
