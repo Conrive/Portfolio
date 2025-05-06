@@ -14,12 +14,10 @@ const { promisify } = require('util');
 const dbGet = promisify(db.get.bind(db));
 const csrf = require('csurf');
 const csrfProtection = csrf({ cookie: false });
-
-
-app.use(express.static(path.join(__dirname, 'public')));
+require('dotenv').config();
 
 app.use(session({
-  secret: 'supersecretkey',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: new SQLiteStore({ db: 'sessions.db', dir: './db' }),
@@ -33,8 +31,9 @@ app.use(session({
 
 app.use(async (req, res, next) => {
   if (req.session.user) {
-    const user = await dbGet(`SELECT * FROM users WHERE id = ?`, req.session.user.id);
-    res.locals.user = user;
+    res.locals.user = await dbGet(`SELECT *
+                                   FROM users
+                                   WHERE id = ?`, req.session.user.id);
   } else {
     res.locals.user = null;
   }
@@ -43,6 +42,8 @@ app.use(async (req, res, next) => {
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(validateInput);
 
 app.use(csrfProtection);
@@ -58,12 +59,12 @@ app.use((err, req, res, next) => {
 
 
 app.set('view engine', 'ejs');
+app.use('/', authRoutes);
+app.use('/', indexRoutes);
+app.use('/', searchRoutes);
+app.use('/', projectRoutes);
 app.use('/profile', profileRoutes);
 app.use('/projects', projectRoutes);
-app.use('/', searchRoutes);
-app.use('/', authRoutes);
-app.use('/', projectRoutes);
-app.use('/', indexRoutes);
 app.use('/admin', require('./routes/admin'));
 
 app.listen(3000, () => console.log('Сервер запущен на http://localhost:3000'));
