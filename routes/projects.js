@@ -181,6 +181,10 @@ router.get('/project/:id/edit-page', (req, res) => {
             return res.status(404).send("Проект не найден");
         }
 
+        if (!req.session.user || req.session.user.id !== project.user_id) {
+            return res.status(403).send("У вас нет доступа к редактированию этого проекта");
+        }
+
         const token = req.csrfToken();
         res.render('editProjectPage', {
             project,
