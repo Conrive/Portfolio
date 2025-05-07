@@ -609,9 +609,6 @@ async function loadCanvas() {
 
         const data = await res.json();
 
-        // Логирование полученных данных
-        console.log('Загруженные данные layout:', data);
-
         // Проверяем, что layout существует и является строкой, если да - распарсим
         if (data && data.layout) {
             let parsedLayout;
@@ -698,7 +695,7 @@ async function loadCanvas() {
                             element.style.width = el.styles.width || '100px';
                             element.style.height = el.styles.height || '100px';
                             element.style.backgroundColor = el.styles.backgroundColor || '#3498db';
-                            element.style.clipPath = el.styles.clipPath || '';
+                            element.style.clipPath = el.styles.clipPath || 'none';
                             element.dataset.sides = el.dataset.sides || 5;
                             element.style.rotate = el.styles.rotate || '0deg';
                             element.style.cursor = 'pointer';
@@ -743,7 +740,7 @@ async function loadCanvas() {
                 console.error('Ошибка: layout.elements не является массивом');
             }
         } else {
-            console.error('Ошибка: Неверная структура данных layout', data);
+            console.error('Ошибка: Неверная структура данных layout');
         }
     } catch (error) {
         console.error('Ошибка загрузки холста:', error);

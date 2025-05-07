@@ -2,19 +2,15 @@ const express = require('express');
 const router = express.Router();
 const { getUserProjects } = require('../models/projectModel');
 const db = require('../models/db');
-const { deleteFileIfExists, upload, storage } = require('../public/deleteFile');
-const csrf = require('csurf');
-const csrfProtection = csrf({ cookie: false });
+const { deleteFileIfExists, upload} = require('../public/deleteFile');
+const { ensureAuth } = require('../models/ensureAuth');
 
-router.get('/', async (req, res) => {
-    if (!req.session || !req.session.user) {
-        return res.redirect('/login'); // Если не авторизован, перенаправляем на вход
-    }
+router.get('/', ensureAuth, async (req, res) => {
 
     const user = req.session.user;
     const projects = await getUserProjects(user.id); // Получаем проекты пользователя
     const token = req.csrfToken();
-    res.render('profile', { user, projects, isOwner: true, csrfToken: token });
+    res.render('profile', { user, profileUser: user, projects, isOwner: true, csrfToken: token });
 });
 
 router.get('/:id', async (req, res) => {
@@ -36,29 +32,21 @@ router.get('/:id', async (req, res) => {
 });
 
 // Форма редактирования профиля
-router.get('/:id/edit', (req, res) => {
-    if (!req.session || !req.session.user) {
-        return res.redirect('/login');
-    }
+router.get('/:id/edit', ensureAuth, (req, res) => {
 
     db.get('SELECT * FROM users WHERE id = ?', [req.session.user.id], (err, user) => {
         if (err || !user) {
             return res.redirect(`/profile/${req.session.user.id}`);
         }
         const token = req.csrfToken();
-        console.log('profile', token);
         res.render('editProfile', { user, csrfToken: token });
     });
 });
 
 // Обновление профиля
-router.post('/:id/edit',
+router.post('/:id/edit', ensureAuth,
     upload.fields([{ name: 'avatar' }, { name: 'cover' }]),
     (req, res) => {
-        console.log('✅ _csrf token in body:', req.body._csrf);
-        if (!req.session || !req.session.user) {
-            return res.redirect('/login');
-        }
 
     const { name, bio, github, telegram, linkedin } = req.body;
     let avatar = req.session.user.avatar;

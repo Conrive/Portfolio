@@ -33,19 +33,19 @@
     <div class="max-w-4xl mx-auto mt-32 p-4">
         <div class="mb-6" style="margin-top: -40px;">
             <% if (profileUser.bio) { %>
-                <p class="text-gray-600 text-sm mt-1 px-4"><%= user.bio %></p>
+                <p class="text-gray-600 text-sm mt-1 px-4"><%= profileUser.bio %></p>
             <% } %>
         </div>
         <!-- Соцсети -->
         <div class="flex justify-center space-x-4 mb-6">
             <% if (profileUser.github) { %>
-                <a href="<%= profileUser.github %>" target="_blank" class="text-gray-700 hover:text-black font-medium">GitHub</a>
+                <a href="<%= profileUser.github %>" target="_blank" class="text-gray-700 hover:text-black font-medium" rel="noopener noreferrer">GitHub</a>
             <% } %>
             <% if (profileUser.telegram) { %>
-                <a href="<%= profileUser.telegram %>" target="_blank" class="text-blue-500 hover:text-blue-700 font-medium">Telegram</a>
+                <a href="<%= profileUser.telegram %>" target="_blank" class="text-blue-500 hover:text-blue-700 font-medium" rel="noopener noreferrer">Telegram</a>
             <% } %>
             <% if (profileUser.linkedin) { %>
-                <a href="<%= profileUser.linkedin %>" target="_blank" class="text-blue-700 hover:text-blue-900 font-medium">LinkedIn</a>
+                <a href="<%= profileUser.linkedin %>" target="_blank" class="text-blue-700 hover:text-blue-900 font-medium" rel="noopener noreferrer">LinkedIn</a>
             <% } %>
         </div>
 

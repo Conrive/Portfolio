@@ -2,9 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models/db'); // подключение к sqlite
 const checkAdmin = require('../models/checkAdmin');
-const { deleteFileIfExists, upload, storage } = require('../public/deleteFile');
+const { deleteFileIfExists} = require('../public/deleteFile');
 const { promisify } = require('util');
-const dbGet = promisify(db.get.bind(db));
 const dbRun = promisify(db.run.bind(db));
 const dbAll = promisify(db.all.bind(db));
 

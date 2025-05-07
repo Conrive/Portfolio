@@ -1,27 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
-const { deleteFileIfExists, upload, storage } = require('../public/deleteFile');
+const { deleteFileIfExists, upload} = require('../public/deleteFile');
 const { promisify } = require('util');
+const { ensureAuth } = require('../models/ensureAuth');
 
-const dbAll = promisify(db.all.bind(db));
 const dbGet = promisify(db.get.bind(db));
 const dbRun = promisify(db.run.bind(db));
 
 // Показ формы добавления проекта
-router.get('/add', (req, res) => {
-    if (!req.session || !req.session.user) {
-        return res.redirect('/login');
-    }
+router.get('/add', ensureAuth, (req, res) => {
     const csrfToken = req.csrfToken();
     res.render('addProject', {csrfToken});
 });
 
 // Обработка формы добавления проекта
-router.post('/add', (req, res) => {
-    if (!req.session || !req.session.user) {
-        return res.redirect('/login');
-    }
+router.post('/add', ensureAuth, (req, res) => {
 
     const { title, description, link } = req.body;
     const userId = req.session.user.id;
@@ -44,10 +38,7 @@ router.post('/add', (req, res) => {
 });
 
 // Показ формы редактирования проекта
-router.get('/edit/:id', (req, res) => {
-    if (!req.session || !req.session.user) {
-        return res.redirect('/login');
-    }
+router.get('/edit/:id', ensureAuth, (req, res) => {
 
     const projectId = req.params.id;
     db.get('SELECT * FROM projects WHERE id = ? AND user_id = ?',
@@ -63,10 +54,7 @@ router.get('/edit/:id', (req, res) => {
 });
 
 // Обновление данных проекта
-router.post('/edit/:id', upload.single('cover'), (req, res) => {
-    if (!req.session || !req.session.user) {
-        return res.redirect('/login');
-    }
+router.post('/edit/:id', ensureAuth, upload.single('cover'), (req, res) => {
 
     const { title, description, link } = req.body;
     const projectId = req.params.id;
@@ -99,10 +87,7 @@ router.post('/edit/:id', upload.single('cover'), (req, res) => {
     });
 });
 
-router.post('/delete/:id', (req, res) => {
-    if (!req.session || !req.session.user) {
-        return res.redirect('/login');
-    }
+router.post('/delete/:id', ensureAuth, (req, res) => {
 
     const projectId = req.params.id;
     const userId = req.session.user.id;
@@ -164,8 +149,6 @@ router.get('/project/:id/view', (req, res) => {
 
     db.get('SELECT * FROM projects WHERE id = ?', [projectId], (err, project) => {
         if (err || !project) {
-            console.log("Проект:", project);
-
             return res.status(404).send("Проект не найден");
         }
 

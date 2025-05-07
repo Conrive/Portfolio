@@ -15,8 +15,6 @@ function scanObject(obj, label, req) {
             if (label !== 'headers') {
                 console.warn(`[⚠️ Injection detected] ${label} - "${key}": "${value}" from IP ${req.ip}`);
                 return true;
-            } else {
-                console.info(`[ℹ️ Suspicious header] ${label} - "${key}": "${value}" from IP ${req.ip}`);
             }
         }
     }

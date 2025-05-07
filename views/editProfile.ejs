@@ -2,17 +2,21 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Редактирование профиля</title>
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 flex justify-center items-center h-screen">
-<div class="max-w-md w-full bg-white p-6 rounded shadow-md">
+<div class="max-w-md w-full bg-white mt-20 p-6 rounded shadow-md">
+    <% if (typeof error !== 'undefined') { %>
+        <p class="text-red-500 text-sm font-medium"><%= error %></p>
+    <% } %>
+
     <h2 class="text-2xl font-bold mb-4">Редактировать профиль</h2>
 
 
     <form action="/profile/<%= user.id %>/edit/?_csrf=<%=csrfToken%>" method="POST" enctype="multipart/form-data" class="space-y-4"> <!-- Спасибо за детство, легенда https://stackoverflow.com/questions/42685940/csrf-and-multer-invalid-csrf-token-error -->
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <% console.log('edit', csrfToken); %>
         <div>
             <label class="block text-sm font-medium">Имя:</label>
             <input type="text" name="name" value="<%= user.name %>" class="w-full p-2 border rounded" required>
@@ -54,7 +58,7 @@
             <% } %>
         </div>
 
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full" onclick="alert('Данные обновлены');">Сохранить</button>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Сохранить</button>
     </form>
 
     <a href="/profile/<%= user.id %>" class="block text-center text-blue-500 mt-4">Назад в профиль</a>
