@@ -1,3 +1,5 @@
+//Скрипт маршрутов страницы поиска
+
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
@@ -5,9 +7,10 @@ const { promisify } = require('util');
 
 const dbAll = promisify(db.all.bind(db));
 
+//Форма страницы поиска
 router.get('/search', async (req, res) => {
     const q = req.query.q?.trim();
-    const filter = req.query.filter; // 'users', 'projects' или undefined
+    const filter = req.query.filter;
 
     if (!q) return res.render('search', { users: [], projects: [], query: q });
 
@@ -40,10 +43,10 @@ router.get('/search', async (req, res) => {
     }
 });
 
-// API для поиска (возвращает JSON)
+//API для поиска (возвращает JSON)
 router.get('/api/search', async (req, res) => {
     const q = req.query.q?.trim();
-    const filter = req.query.filter; // 'users', 'projects' или 'all'
+    const filter = req.query.filter;
 
     if (!q) return res.json({ users: [], projects: [] });
 

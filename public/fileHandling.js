@@ -1,3 +1,7 @@
+//Скрипт использующийся для загрузки и удаления файлов.
+//Загрузка файлов производится в папку Uploads.
+//При загрузке файлу присваивается уникальное имя.
+
 const multer = require("multer");
 const path = require("path");
 const crypto = require("crypto");
@@ -20,7 +24,7 @@ const upload = multer({
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
         cb(null, allowedTypes.includes(file.mimetype));
     },
-    limits: { fileSize: 5 * 1024 * 1024 } // 5 MB
+    limits: { fileSize: 5 * 1024 * 1024 }
 })
 
 function deleteFileIfExists(filePath) {

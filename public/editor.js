@@ -1,47 +1,19 @@
+//Скрипт обработчик страницы макета проекта.
+//Включает создание, редактирование, удаление и сохранение элементов.
+
 let selectedElement = null;
 let draggedElement = null;
 let offsetX = 0;
 let offsetY = 0;
 
+//CSRF защита страницы
 document.addEventListener('DOMContentLoaded', async () => {
     window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const projectId = window.location.pathname.split('/')[2];
     await loadCanvas(projectId);
 });
 
-function rgb2hex(rgb) {
-    const result = rgb.match(/\d+/g);
-    return result ? "#" + result.map(x => (+x).toString(16).padStart(2, "0")).join("") : "#ffffff";
-}
-
-function toggleStyle(style) {
-    if (!selectedElement) return;
-    const current = selectedElement.style;
-
-    switch (style) {
-        case 'bold':
-            current.fontWeight = current.fontWeight === 'bold' ? 'normal' : 'bold';
-            break;
-        case 'italic':
-            current.fontStyle = current.fontStyle === 'italic' ? 'normal' : 'italic';
-            break;
-        case 'underline':
-            if (current.textDecoration.includes('underline')) {
-                current.textDecoration = current.textDecoration.replace('underline', '').trim();
-            } else {
-                current.textDecoration = (current.textDecoration + ' underline').trim();
-            }
-            break;
-        case 'line-through':
-            if (current.textDecoration.includes('line-through')) {
-                current.textDecoration = current.textDecoration.replace('line-through', '').trim();
-            } else {
-                current.textDecoration = (current.textDecoration + ' line-through').trim();
-            }
-            break;
-    }
-}
-
+//Функция добавления элемента на холст
 function addElement(type) {
     const canvas = document.getElementById('canvas');
     let newEl;
@@ -99,95 +71,44 @@ function addElement(type) {
     selectElement(newEl);
 }
 
-document.addEventListener('keydown', function (e) {
-    if (e.key === 'Delete' && selectedElement) {
-        removeElement(selectedElement);
+//Функция для загрузки и добавления изображения на canvas//Функция для загрузки изображения в систему
+document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const projectId = window.location.pathname.split('/')[2];
+
+    const res = await fetch(`/project/${projectId}/upload-image`, {
+        method: 'POST',
+        headers: {
+            'CSRF-Token': csrfToken
+        },
+        body: formData
+    });
+
+    const data = await res.json();
+    if (data.imageUrl) {
+        addImageElement(data.imageUrl);
+    } else {
+        alert('Ошибка загрузки');
     }
 });
 
-window.addEventListener('resize', () => {
-    document.querySelectorAll('#canvas > *').forEach(el => {
-        const leftPx = el.offsetLeft;
-        const topPx = el.offsetTop;
-
-        const canvas = document.getElementById('canvas');
-        const leftPercent = (leftPx / canvas.offsetWidth) * 100;
-        const topPercent = (topPx / canvas.offsetHeight) * 100;
-
-        el.style.left = `${leftPercent}%`;
-        el.style.top = `${topPercent}%`;
-    });
-});
-
-function makeDraggable(el) {
-    el.addEventListener('mousedown', (e) => {
-        draggedElement = el;
-        offsetX = e.clientX - el.getBoundingClientRect().left;
-        offsetY = e.clientY - el.getBoundingClientRect().top;
-        document.addEventListener('mousemove', onDrag);
-        document.addEventListener('mouseup', stopDrag);
-    });
+//Функция для добавления изображения на canvas
+function addImageElement(url) {
+    const img = document.createElement('img');
+    img.src = url;
+    img.classList.add('max-w-full', 'rounded', 'absolute');
+    img.style.cursor = 'pointer';
+    img.style.width = '20%';
+    img.style.overflow = 'hidden';
+    img.onclick = () => selectElement(img);
+    document.getElementById('canvas').appendChild(img);
+    updateObjectTree();
+    selectElement(img);
 }
 
-function onDrag(e) {
-    if (!draggedElement) return;
-
-    const canvas = document.getElementById('canvas');
-    const canvasRect = canvas.getBoundingClientRect();
-
-    let left = e.clientX - canvasRect.left - offsetX;
-    let top = e.clientY - canvasRect.top - offsetY;
-
-    left = Math.max(0, left);
-    top = Math.max(0, top);
-
-    const canvasWidth = canvas.offsetWidth;
-    const canvasHeight = canvas.offsetHeight;
-    const elementWidth = draggedElement.offsetWidth;
-    const elementHeight = draggedElement.offsetHeight;
-
-    if (left + elementWidth > canvasWidth) {
-        left = canvasWidth - elementWidth;
-    }
-
-    if (top + elementHeight > canvasHeight) {
-        top = canvasHeight - elementHeight;
-    }
-
-    draggedElement.style.left = `${left}px`;
-    draggedElement.style.top = `${top}px`;
-}
-
-function stopDrag() {
-    document.removeEventListener('mousemove', onDrag);
-    document.removeEventListener('mouseup', stopDrag);
-    draggedElement = null;
-}
-
-function resetBG(el) {
-    el.style.backgroundColor = 'white';
-    el.style.backgroundImage = '';
-}
-
-function validateURL() {
-    const input = document.getElementById('urlInput');
-    const value = input.value.trim();
-
-    try {
-        const url = new URL(value);
-
-        if (url.protocol === 'http:' || url.protocol === 'https:') {
-            selectedElement.href = value;
-        } else {
-            selectedElement.href = '';
-            alert('Ошибка! Проверьте правильность ссылки');
-        }
-    } catch (e) {
-        selectedElement.href = '';
-        alert('Ошибка! Проверьте валидность ссылки');
-    }
-}
-
+//Функция для выделения одного из элементов
+//Позволяет настраивать параметры элемента
 function selectElement(el) {
     selectedElement = el;
     const propsPanel = document.getElementById('propertiesContent');
@@ -314,64 +235,7 @@ function selectElement(el) {
     updatePropsPanel(el)
 }
 
-document.getElementById('uploadForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const projectId = window.location.pathname.split('/')[2];
-
-    const res = await fetch(`/project/${projectId}/upload-image`, {
-        method: 'POST',
-        headers: {
-            'CSRF-Token': csrfToken
-        },
-        body: formData
-    });
-
-    const data = await res.json();
-    if (data.imageUrl) {
-        addImageElement(data.imageUrl);
-    } else {
-        alert('Ошибка загрузки');
-    }
-});
-
-document.getElementById('canvas').addEventListener('click', (e) => {
-    if (e.target.id === 'canvas') {
-        selectedElement = document.getElementById('canvas');
-        updatePropsPanel(selectedElement);
-    }
-});
-
-function getPolygonClipPath(sides) {
-    const angle = 360 / sides;
-    let points = "";
-    for (let i = 0; i < sides; i++) {
-        const x = 50 + 50 * Math.cos((angle * i - 90) * Math.PI / 180);
-        const y = 50 + 50 * Math.sin((angle * i - 90) * Math.PI / 180);
-        points += `${x}% ${y}%, `;
-    }
-    return `polygon(${points.slice(0, -2)})`;
-}
-
-function updatePolygonSides(sides) {
-    sides = Math.max(3, Math.min(12, +sides));
-    selectedElement.dataset.sides = sides;
-    selectedElement.style.clipPath = getPolygonClipPath(sides);
-}
-
-function addImageElement(url) {
-    const img = document.createElement('img');
-    img.src = url;
-    img.classList.add('max-w-full', 'rounded', 'absolute');
-    img.style.cursor = 'pointer';
-    img.style.width = '20%';
-    img.style.overflow = 'hidden';
-    img.onclick = () => selectElement(img);
-    document.getElementById('canvas').appendChild(img);
-    updateObjectTree();
-    selectElement(img);
-}
-
+//Функция для отрисовки панели параметров элементов
 function updatePropsPanel(el) {
     selectedElement = el;
     const propsPanel = document.getElementById('propertiesContent');
@@ -383,7 +247,6 @@ function updatePropsPanel(el) {
     const top = (parseFloat(el.offsetTop) / canvasHeight) * 100;
 
     if (el.id === 'canvas') {
-        // Панель для фона
         propsPanel.innerHTML = `
           <div class="mb-5">
             <label class="block text-sm mb-1">Цвет фона</label>
@@ -419,14 +282,12 @@ function updatePropsPanel(el) {
 
             img.src = url;
             img.onload = () => {
-                // Картинка загрузилась успешно
                 el.style.backgroundImage = `url(${url})`;
                 el.style.backgroundSize = 'cover';
                 el.style.backgroundPosition = 'center';
             };
 
             img.onerror = () => {
-                // Ошибка загрузки — сбрасываем фон
                 el.style.backgroundImage = '';
                 alert('Ошибка загрузки! Проверьте валидность ссылки.');
             };
@@ -471,6 +332,130 @@ function updatePropsPanel(el) {
     }
 }
 
+//Функция для отрисовки дерева элементов
+function updateObjectTree() {
+    const propsPanel = document.getElementById('propertiesContent');
+    const tree = document.getElementById('objectTree');
+    tree.innerHTML = '';
+
+    const elements = document.querySelectorAll('#canvas > *');
+    elements.forEach((el, index) => {
+        const id = el.dataset.uid || `element-${index + 1}`;
+        el.dataset.uid = id;
+
+        const li = document.createElement('li');
+        li.className = 'cursor-pointer hover:bg-gray-100 p-1 rounded flex items-center justify-between';
+        li.innerHTML = `
+      <span class="truncate max-w-[80%]">${el.dataset.name || id}</span>
+    `;
+        li.addEventListener('click', () => {
+            propsPanel.innerHTML = '';
+            selectElement(el);
+        });
+
+        tree.appendChild(li);
+    });
+}
+
+document.getElementById('canvas').addEventListener('click', (e) => {
+    if (e.target.id === 'canvas') {
+        selectedElement = document.getElementById('canvas');
+        updatePropsPanel(selectedElement);
+    }
+});
+
+//Изменение размера canvas
+window.addEventListener('resize', () => {
+    document.querySelectorAll('#canvas > *').forEach(el => {
+        const leftPx = el.offsetLeft;
+        const topPx = el.offsetTop;
+
+        const canvas = document.getElementById('canvas');
+        const leftPercent = (leftPx / canvas.offsetWidth) * 100;
+        const topPercent = (topPx / canvas.offsetHeight) * 100;
+
+        el.style.left = `${leftPercent}%`;
+        el.style.top = `${topPercent}%`;
+    });
+});
+
+//Проверка валидности ссылки
+function validateURL() {
+    const input = document.getElementById('urlInput');
+    const value = input.value.trim();
+
+    try {
+        const url = new URL(value);
+
+        if (url.protocol === 'http:' || url.protocol === 'https:') {
+            selectedElement.href = value;
+        } else {
+            selectedElement.href = '';
+            alert('Ошибка! Проверьте правильность ссылки');
+        }
+    } catch (e) {
+        selectedElement.href = '';
+        alert('Ошибка! Проверьте валидность ссылки');
+    }
+}
+
+function rgb2hex(rgb) {
+    const result = rgb.match(/\d+/g);
+    return result ? "#" + result.map(x => (+x).toString(16).padStart(2, "0")).join("") : "#ffffff";
+}
+
+function resetBG(el) {
+    el.style.backgroundColor = 'white';
+    el.style.backgroundImage = '';
+}
+
+//Функция для настройки параметра стиля шрифта у элемента
+function toggleStyle(style) {
+    if (!selectedElement) return;
+    const current = selectedElement.style;
+
+    switch (style) {
+        case 'bold':
+            current.fontWeight = current.fontWeight === 'bold' ? 'normal' : 'bold';
+            break;
+        case 'italic':
+            current.fontStyle = current.fontStyle === 'italic' ? 'normal' : 'italic';
+            break;
+        case 'underline':
+            if (current.textDecoration.includes('underline')) {
+                current.textDecoration = current.textDecoration.replace('underline', '').trim();
+            } else {
+                current.textDecoration = (current.textDecoration + ' underline').trim();
+            }
+            break;
+        case 'line-through':
+            if (current.textDecoration.includes('line-through')) {
+                current.textDecoration = current.textDecoration.replace('line-through', '').trim();
+            } else {
+                current.textDecoration = (current.textDecoration + ' line-through').trim();
+            }
+            break;
+    }
+}
+
+//Вспомогательные функции для отрисовки полигона в реальном времени
+function getPolygonClipPath(sides) {
+    const angle = 360 / sides;
+    let points = "";
+    for (let i = 0; i < sides; i++) {
+        const x = 50 + 50 * Math.cos((angle * i - 90) * Math.PI / 180);
+        const y = 50 + 50 * Math.sin((angle * i - 90) * Math.PI / 180);
+        points += `${x}% ${y}%, `;
+    }
+    return `polygon(${points.slice(0, -2)})`;
+}
+function updatePolygonSides(sides) {
+    sides = Math.max(3, Math.min(12, +sides));
+    selectedElement.dataset.sides = sides;
+    selectedElement.style.clipPath = getPolygonClipPath(sides);
+}
+
+//функция для изменения позиции элемента при настройке через панель
 function updateElementPosition() {
     if (!selectedElement) return;
 
@@ -481,7 +466,6 @@ function updateElementPosition() {
     let inputX = parseFloat(document.getElementById('posX').value);
     let inputY = parseFloat(document.getElementById('posY').value);
 
-    // Ограничения: чтобы элемент не вышел за границы
     const maxX = 100 - (selectedElement.offsetWidth / canvasWidth) * 100;
     const maxY = 100 - (selectedElement.offsetHeight / canvasHeight) * 100;
 
@@ -495,6 +479,51 @@ function updateElementPosition() {
     document.getElementById('posY').value = inputY.toFixed(1);
 }
 
+//Drag & drop элемента
+function makeDraggable(el) {
+    el.addEventListener('mousedown', (e) => {
+        draggedElement = el;
+        offsetX = e.clientX - el.getBoundingClientRect().left;
+        offsetY = e.clientY - el.getBoundingClientRect().top;
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', stopDrag);
+    });
+}
+function onDrag(e) {
+    if (!draggedElement) return;
+
+    const canvas = document.getElementById('canvas');
+    const canvasRect = canvas.getBoundingClientRect();
+
+    let left = e.clientX - canvasRect.left - offsetX;
+    let top = e.clientY - canvasRect.top - offsetY;
+
+    left = Math.max(0, left);
+    top = Math.max(0, top);
+
+    const canvasWidth = canvas.offsetWidth;
+    const canvasHeight = canvas.offsetHeight;
+    const elementWidth = draggedElement.offsetWidth;
+    const elementHeight = draggedElement.offsetHeight;
+
+    if (left + elementWidth > canvasWidth) {
+        left = canvasWidth - elementWidth;
+    }
+
+    if (top + elementHeight > canvasHeight) {
+        top = canvasHeight - elementHeight;
+    }
+
+    draggedElement.style.left = `${left}px`;
+    draggedElement.style.top = `${top}px`;
+}
+function stopDrag() {
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('mouseup', stopDrag);
+    draggedElement = null;
+}
+
+//Удаление элемента через панель
 function removeElement(el) {
     const propsPanel = document.getElementById('propertiesContent');
     if (el.tagName === 'IMG' && el.src.includes('/uploads/')) {
@@ -512,32 +541,14 @@ function removeElement(el) {
     selectedElement = null;
 }
 
-function updateObjectTree() {
-    const propsPanel = document.getElementById('propertiesContent');
-    const tree = document.getElementById('objectTree');
-    tree.innerHTML = '';
+//удаление элемента по нажатию
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Delete' && selectedElement) {
+        removeElement(selectedElement);
+    }
+});
 
-    const elements = document.querySelectorAll('#canvas > *');
-    elements.forEach((el, index) => {
-        const id = el.dataset.uid || `element-${index + 1}`;
-        el.dataset.uid = id;
-
-        const li = document.createElement('li');
-        li.className = 'cursor-pointer hover:bg-gray-100 p-1 rounded flex items-center justify-between';
-        li.innerHTML = `
-      <span class="truncate max-w-[80%]">${el.dataset.name || id}</span>
-    `;
-
-        // Выбор элемента
-        li.addEventListener('click', () => {
-            propsPanel.innerHTML = '';
-            selectElement(el);
-        });
-
-        tree.appendChild(li);
-    });
-}
-
+//Функция записи canvas и элементов с их настройками в массив
 function collectCanvasData() {
     const canvas = document.getElementById('canvas');
     const canvasStyles = getComputedStyle(canvas);
@@ -582,6 +593,7 @@ function collectCanvasData() {
     };
 }
 
+//Функция для сборки массива canvas в JSON-подобную структуру layout
 async function saveCanvas() {
     const data = collectCanvasData();
     const projectId = window.location.pathname.split('/')[2];
@@ -599,6 +611,7 @@ async function saveCanvas() {
     console.log(layoutData);
 }
 
+//Функция для загрузки canvas из lauout
 async function loadCanvas() {
     const projectId = window.location.pathname.split('/')[2]; // Извлекаем ID проекта
 
@@ -611,11 +624,9 @@ async function loadCanvas() {
 
         const data = await res.json();
 
-        // Проверяем, что layout существует и является строкой, если да - распарсим
         if (data && data.layout) {
             let parsedLayout;
 
-            // Если layout - строка, то парсим её в объект
             if (typeof data.layout === 'string') {
                 try {
                     parsedLayout = JSON.parse(data.layout);
@@ -626,12 +637,9 @@ async function loadCanvas() {
             } else {
                 parsedLayout = data.layout;
             }
-
-            // Проверка, что parsedLayout содержит элемент elements как массив
             if (parsedLayout && parsedLayout.elements && Array.isArray(parsedLayout.elements)) {
                 let objects = parsedLayout.elements;
 
-                // Очищаем текущий канвас перед добавлением новых элементов
                 const canvas = document.getElementById('canvas');
                 canvas.innerHTML = '';
 
@@ -642,7 +650,6 @@ async function loadCanvas() {
                 canvas.style.backgroundSize = parsedLayout.backgroundSize || 'cover';
                 canvas.style.backgroundRepeat = parsedLayout.backgroundRepeat || 'no-repeat';
 
-                // Добавляем объекты на холст
                 objects.forEach(el => {
                     let element;
 
@@ -728,7 +735,6 @@ async function loadCanvas() {
                             return;
                     }
 
-                    // Добавляем элемент на канвас
                     const canvas = document.getElementById('canvas');
 
                     element.onclick = () => selectElement(element);
@@ -748,8 +754,3 @@ async function loadCanvas() {
         console.error('Ошибка загрузки холста:', error);
     }
 }
-
-document.addEventListener('DOMContentLoaded', async () => {
-    const projectId = window.location.pathname.split('/')[2];
-    await loadCanvas(projectId);
-});

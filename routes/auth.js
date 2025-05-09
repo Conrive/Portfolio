@@ -1,14 +1,12 @@
+//Скрипт маршрутов связанных с регистрацией, авторизацией и выходом из системы
+
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const { createUser, findUserByEmail, findUserByUsername } = require('../models/userModel');
 const rateLimit = require('express-rate-limit');
 
-router.get('/login', (req, res) => {
-    const token = req.csrfToken();
-    res.render('login', { error: null, csrfToken: token });
-});
-
+//Ограничитель количества попыток для входа
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
@@ -24,6 +22,11 @@ const loginLimiter = rateLimit({
     }
 });
 
+//Форма авторизации
+router.get('/login', (req, res) => {
+    const token = req.csrfToken();
+    res.render('login', { error: null, csrfToken: token });
+});
 router.post('/login', loginLimiter, async (req, res) => {
     const { identifier, password } = req.body;
 
@@ -79,11 +82,11 @@ router.post('/login', loginLimiter, async (req, res) => {
     res.redirect('/');
 });
 
+//форма регистрации
 router.get('/register', (req, res) => {
     const token = req.csrfToken();
     res.render('register', { error: null, csrfToken: token });
 });
-
 router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -100,6 +103,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
+//Форма выхода из системы
 router.get('/logout', (req, res) => {
     req.session.destroy(() => {
         res.redirect('/login');

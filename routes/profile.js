@@ -1,18 +1,21 @@
+//Скрипт маршрутов профилем пользователя
+
 const express = require('express');
 const router = express.Router();
 const { getUserProjects } = require('../models/projectModel');
 const db = require('../models/db');
-const { deleteFileIfExists, upload, storage} = require('../public/deleteFile');
+const { deleteFileIfExists, upload, storage} = require('../public/fileHandling');
 const { ensureAuth } = require('../models/ensureAuth');
 
 router.get('/', ensureAuth, async (req, res) => {
 
     const user = req.session.user;
-    const projects = await getUserProjects(user.id); // Получаем проекты пользователя
+    const projects = await getUserProjects(user.id);
     const token = req.csrfToken();
     res.render('profile', { user, profileUser: user, projects, isOwner: true, csrfToken: token });
 });
 
+//Форма профиля
 router.get('/:id', async (req, res) => {
     const viewer = req.session.user;
     const profileId = parseInt(req.params.id);
@@ -31,7 +34,7 @@ router.get('/:id', async (req, res) => {
     });
 });
 
-// Форма редактирования профиля
+//Форма редактирования профиля
 router.get('/:id/edit', ensureAuth, (req, res) => {
 
     db.get('SELECT * FROM users WHERE id = ?', [req.session.user.id], (err, user) => {
@@ -43,7 +46,7 @@ router.get('/:id/edit', ensureAuth, (req, res) => {
     });
 });
 
-// Обновление профиля
+//Обновление профиля
 router.post('/:id/edit', ensureAuth,
     upload.fields([{ name: 'avatar' }, { name: 'cover' }]),
     (req, res) => {
@@ -52,7 +55,6 @@ router.post('/:id/edit', ensureAuth,
     let avatar = req.session.user.avatar;
     let cover = req.session.user.cover;
 
-    // Удаление старых и сохранение новых
     if (req.files['avatar']) {
         deleteFileIfExists(avatar); // удаляем старый
         avatar = `/uploads/${req.files['avatar'][0].filename}`;

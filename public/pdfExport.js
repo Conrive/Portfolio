@@ -1,3 +1,7 @@
+//Скрипт для генерации PDF документа через библиотеку PDFMake.
+//Генерирует PDF на основе разметки страницы макета проекта.
+//Ввиду ограничений библиотеки, не может в точности передать все настройки элементов
+
 async function exportCanvasToPDF() {
     const canvas = document.getElementById('canvas');
     const elements = Array.from(canvas.children);
@@ -8,7 +12,8 @@ async function exportCanvasToPDF() {
 
     const content = [];
     const [r, g, b] = parseRGB(canvasStyles.backgroundColor);
-    content.push({
+
+    content.push({ //Создает прямоугольник под параметры canvas
         canvas: [{
             type: 'rect',
             x: 0,
@@ -20,10 +25,8 @@ async function exportCanvasToPDF() {
         absolutePosition: { x: 0, y: 0 }
     });
 
-    // Фоновое изображение
-    const bgImage = canvasStyles.backgroundImage;
-    if (bgImage && bgImage !== 'none') {
-        const match = bgImage.match(/url\("?(.+?)"?\)/);
+    if (canvasStyles.backgroundImage !== 'none') { //Ставит фоновое изображение странице, если токовое присутствует
+        const match = canvasStyles.backgroundImage.match(/url\("?(.+?)"?\)/);
         if (match && match[1]) {
             const imgUrl = match[1];
             const imageData = await toDataURL(imgUrl);
@@ -37,8 +40,7 @@ async function exportCanvasToPDF() {
         }
     }
 
-    // Перебор всех элементов на canvas
-    for (const el of elements) {
+    for (const el of elements) { //Перебор и добавление всех элементов на canvas
         const styles = getComputedStyle(el);
         const left = parseFloat(styles.left);
         const top = parseFloat(styles.top);
@@ -112,7 +114,7 @@ async function exportCanvasToPDF() {
         }
     }
 
-    const docDefinition = {
+    const docDefinition = { //Настраивает страницу PDF
         pageSize: { width: canvas.offsetWidth, height: canvas.offsetHeight },
         pageMargins: [0, 0, 0, 0],
         content: content
@@ -121,7 +123,7 @@ async function exportCanvasToPDF() {
     pdfMake.createPdf(docDefinition).download('canvas.pdf');
 }
 
-// Поддержка % координат и clip-path
+//Поддержка % координат и clip-path
 function parseClipPath(clipPath, width, height) {
     const match = clipPath.match(/polygon\((.+)\)/);
     if (!match) return [];
@@ -134,7 +136,7 @@ function parseClipPath(clipPath, width, height) {
     });
 }
 
-// Конвертация изображения в base64
+//Конвертация изображения в base64
 function toDataURL(url) {
     return new Promise((resolve) => {
         const img = new Image();

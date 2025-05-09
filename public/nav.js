@@ -1,3 +1,5 @@
+//Скрипт обработчик nav меню.
+
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 const userList = document.querySelector('#searchUsers ul');
@@ -41,11 +43,13 @@ filterButtons.forEach(button => {
 
 let searchTimeout;
 
+//Подсвечивает места, совпадающие с вводом пользователя
 const highlight = (text, q) => {
-    const safeQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // экранируем спецсимволы RegExp
+    const safeQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return text.replace(new RegExp(`(${safeQuery})`, 'gi'), '<mark class="bg-gray-200">$1</mark>');
 };
 
+//Функция быстрого поиска по ближайшему совпадению
 async function triggerSearch() {
     const query = searchInput.value.trim();
 
@@ -56,7 +60,6 @@ async function triggerSearch() {
     }
 
     try {
-        // Показать индикатор загрузки
         userList.innerHTML = '<div class="text-center text-gray-400">Загрузка...</div>';
         projectList.innerHTML = '';
 
@@ -74,9 +77,10 @@ async function triggerSearch() {
 
 searchInput.addEventListener('input', () => {
     clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(triggerSearch, 300); // debounce
+    searchTimeout = setTimeout(triggerSearch, 300);
 });
 
+//Функция полного поиска с переходом на отдельную страницу
 searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         const q = searchInput.value.trim();
@@ -86,6 +90,7 @@ searchInput.addEventListener('keydown', (e) => {
     }
 });
 
+//Переключатель фильтров
 filterButtons.forEach(btn => {
     btn.addEventListener('click', () => {
         filterButtons.forEach(b => b.classList.remove('active'));
@@ -96,6 +101,7 @@ filterButtons.forEach(btn => {
     });
 });
 
+//Отображает результаты поиска в nav
 function renderResults(data) {
     const users = Array.isArray(data.users) ? data.users : [];
     const projects = Array.isArray(data.projects) ? data.projects : [];

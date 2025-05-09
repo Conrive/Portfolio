@@ -1,20 +1,22 @@
+//Скрипт маршрутов проектов пользователя
+
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
-const { deleteFileIfExists, upload, storage} = require('../public/deleteFile');
+const { deleteFileIfExists, upload, storage} = require('../public/fileHandling');
 const { promisify } = require('util');
 const { ensureAuth } = require('../models/ensureAuth');
 
 const dbGet = promisify(db.get.bind(db));
 const dbRun = promisify(db.run.bind(db));
 
-// Показ формы добавления проекта
+//Показ формы добавления проекта
 router.get('/add', ensureAuth, (req, res) => {
     const csrfToken = req.csrfToken();
     res.render('addProject', {csrfToken});
 });
 
-// Обработка формы добавления проекта
+//Обработка формы добавления проекта
 router.post('/add', ensureAuth, (req, res) => {
 
     const { title, description, link } = req.body;
@@ -37,7 +39,7 @@ router.post('/add', ensureAuth, (req, res) => {
     );
 });
 
-// Показ формы редактирования проекта
+//Показ формы редактирования проекта
 router.get('/edit/:id', ensureAuth, (req, res) => {
 
     const projectId = req.params.id;
@@ -53,7 +55,7 @@ router.get('/edit/:id', ensureAuth, (req, res) => {
     );
 });
 
-// Обновление данных проекта
+//Обновление данных проекта
 router.post('/edit/:id', ensureAuth, upload.single('cover'), (req, res) => {
 
     const { title, description, link } = req.body;
@@ -87,31 +89,29 @@ router.post('/edit/:id', ensureAuth, upload.single('cover'), (req, res) => {
     });
 });
 
+//Форма удаления проекта
 router.post('/delete/:id', ensureAuth, (req, res) => {
 
     const projectId = req.params.id;
     const userId = req.session.user.id;
 
-    // Получаем проект перед удалением
     db.get('SELECT * FROM projects WHERE id = ? AND user_id = ?', [projectId, userId], (err, project) => {
         if (err || !project) {
             return res.redirect(`/profile/${userId}`);
         }
 
-        // Удаляем обложку
         if (project.cover) deleteFileIfExists(project.cover);
 
-        // Разбор layout
         let parsedLayout;
 
         try {
             let layoutRaw = project.layout;
 
             if (typeof layoutRaw === 'string') {
-                parsedLayout = JSON.parse(layoutRaw); // первый парсинг
+                parsedLayout = JSON.parse(layoutRaw);
 
                 if (typeof parsedLayout === 'string') {
-                    parsedLayout = JSON.parse(parsedLayout); // второй парсинг
+                    parsedLayout = JSON.parse(parsedLayout);
                 }
             } else {
                 parsedLayout = layoutRaw;
@@ -134,7 +134,6 @@ router.post('/delete/:id', ensureAuth, (req, res) => {
             console.error(`Ошибка при парсинге layout проекта ${projectId}:`, e.message);
         }
 
-        // Удаляем проект
         db.run('DELETE FROM projects WHERE id = ? AND user_id = ?', [projectId, userId], (err) => {
             if (err) {
                 console.error('Ошибка при удалении проекта:', err.message);
@@ -144,6 +143,7 @@ router.post('/delete/:id', ensureAuth, (req, res) => {
     });
 });
 
+//Форма страницы макета проекта
 router.get('/project/:id/view', (req, res) => {
     const projectId = req.params.id;
 
@@ -156,6 +156,7 @@ router.get('/project/:id/view', (req, res) => {
     });
 });
 
+//Форма страницы редактирования макета проекта
 router.get('/project/:id/edit-page', (req, res) => {
     const projectId = req.params.id;
 
@@ -177,6 +178,7 @@ router.get('/project/:id/edit-page', (req, res) => {
     });
 });
 
+//Загрузка изображения на макете
 router.post('/project/:id/upload-image', upload.single('image'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Файл не загружен' });
 
@@ -184,12 +186,14 @@ router.post('/project/:id/upload-image', upload.single('image'), (req, res) => {
     res.json({ imageUrl });
 });
 
+//Удаления изображения на макете
 router.post('/delete-upload', (req, res) => {
     const { path } = req.body;
     deleteFileIfExists(path);
     res.json({ success: true });
 });
 
+//Сохранение макета в layuot
 router.post('/project/:id/save', async (req, res) => {
     const { id } = req.params;
     const pageData = req.body;
@@ -203,7 +207,7 @@ router.post('/project/:id/save', async (req, res) => {
     }
 });
 
-// Загрузка layout
+//Загрузка layout
 router.get('/api/project/:id/layout', async (req, res) => {
     const projectId = req.params.id;
 
@@ -211,7 +215,7 @@ router.get('/api/project/:id/layout', async (req, res) => {
         const project = await dbGet('SELECT layout FROM projects WHERE id = ?', [projectId]);
 
         if (project) {
-            const layout = project.layout ? JSON.parse(project.layout) : []; // Пустой массив если пусто
+            const layout = project.layout ? JSON.parse(project.layout) : [];
             res.json({ layout });
         } else {
             res.status(404).json({ error: 'Project not found' });
@@ -222,7 +226,7 @@ router.get('/api/project/:id/layout', async (req, res) => {
     }
 });
 
-// Сохранение layout
+//Сохранение layout
 router.post('/api/project/:id/layout', async (req, res) => {
     const projectId = req.params.id;
     const { layout } = req.body;

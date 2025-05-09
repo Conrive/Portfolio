@@ -1,7 +1,11 @@
+//Скрипт является системой защиты от SQL, NoSQL и XSS инъекций.
+//Скрипт проверяет все строки текста и блокирует те, что содержат подозрительный ввод.
+//Работает в паре с экранированием <%= %>.
+
 const dangerousPatterns = [
-    /('|--|;|\/\*|\*\/|xp_cmdshell|union\s+select|\bor\b|\band\b)/i, // SQL
-    /<script.*?>.*?<\/script>/i, // XSS
-    /\$ne|\$gt|\$where|\$regex/i // NoSQL
+    /('|--|;|\/\*|\*\/|xp_cmdshell|union\s+select|\bor\b|\band\b)/i,
+    /<script.*?>.*?<\/script>/i,
+    /\$ne|\$gt|\$where|\$regex/i
 ];
 
 function isMalicious(value) {
