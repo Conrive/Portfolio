@@ -321,6 +321,9 @@ document.getElementById('uploadForm').addEventListener('submit', async function 
 
     const res = await fetch(`/project/${projectId}/upload-image`, {
         method: 'POST',
+        headers: {
+            'CSRF-Token': csrfToken
+        },
         body: formData
     });
 
@@ -498,7 +501,8 @@ function removeElement(el) {
         const filePath = new URL(el.src).pathname;
         fetch('/delete-upload', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json',
+                       'CSRF-Token': window.csrfToken},
             body: JSON.stringify({ path: filePath })
         });
     }
@@ -577,8 +581,6 @@ function collectCanvasData() {
         elements
     };
 }
-
-window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 async function saveCanvas() {
     const data = collectCanvasData();

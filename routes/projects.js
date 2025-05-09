@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
-const { deleteFileIfExists, upload} = require('../public/deleteFile');
+const { deleteFileIfExists, upload, storage} = require('../public/deleteFile');
 const { promisify } = require('util');
 const { ensureAuth } = require('../models/ensureAuth');
 

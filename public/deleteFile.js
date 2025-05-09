@@ -4,6 +4,9 @@ const crypto = require("crypto");
 const fs = require("fs");
 
 const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/uploads/');
+    },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname);
         const uniqueName = crypto.randomUUID() + ext;
@@ -13,6 +16,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage,
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        cb(null, allowedTypes.includes(file.mimetype));
+    },
     limits: { fileSize: 5 * 1024 * 1024 } // 5 MB
 })
 

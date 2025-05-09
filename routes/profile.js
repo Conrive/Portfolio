@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getUserProjects } = require('../models/projectModel');
 const db = require('../models/db');
-const { deleteFileIfExists, upload} = require('../public/deleteFile');
+const { deleteFileIfExists, upload, storage} = require('../public/deleteFile');
 const { ensureAuth } = require('../models/ensureAuth');
 
 router.get('/', ensureAuth, async (req, res) => {
