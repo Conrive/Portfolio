@@ -24,13 +24,22 @@
 
 <main class="w-full flex h-fit mt-20">
     <aside class="w-1/5 p-4 space-y-2 flex flex-col items-start">
-        <button class="bg-red-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-red-600" onclick="exportCanvasToPDF()">Экспортировать в PDF</button>
-
-        <button class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600"><a href="/profile/<%= user.id %>">Вернуться в профиль</a></button>
+        <% if (project.layout) { %>
+            <button class="bg-red-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-red-600" onclick="exportCanvasToPDF()">Экспортировать в PDF</button>
+        <% } %>
+        <% if (user) { %>
+            <button class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600"><a href="/profile/<%= user.id %>">Вернуться в профиль</a></button>
+        <% } else { %>
+            <button class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600"><a href="/">Вернуться на главную</a></button>
+        <% } %>
     </aside>
 
     <div class="flex w-4/5 items-center justify-center">
-        <div id="canvas"></div>
+        <% if (project.layout) { %>
+            <div id="canvas"></div>
+        <% } else { %>
+            <div>Упс... Похоже, что у этого проекта пока отсутствует страница. Попробуйте зайти позже.</div>
+        <% } %>
     </div>
 </main>
 

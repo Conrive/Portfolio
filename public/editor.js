@@ -99,7 +99,7 @@ function addImageElement(url) {
     img.src = url;
     img.classList.add('max-w-full', 'rounded', 'absolute');
     img.style.cursor = 'pointer';
-    img.style.width = '20%';
+    img.style.width = '200px';
     img.style.overflow = 'hidden';
     img.onclick = () => selectElement(img);
     document.getElementById('canvas').appendChild(img);
@@ -206,7 +206,7 @@ function selectElement(el) {
         propsPanel.innerHTML = `
             <label class="block text-sm mb-1 mt-3">Ширина</label>
             <input type="number" value="${parseInt(el.style.width)}" 
-                   oninput="selectedElement.style.width = this.value + '%'" class="w-full bg-gray-200 pl-3 rounded-2xl">
+                   oninput="selectedElement.style.width = this.value + 'px'" class="w-full bg-gray-200 pl-3 rounded-2xl">
         
             <label class="block text-sm mb-1 mt-3">Закругление</label>
             <input type="number" value="${parseInt(el.style.borderRadius) || '0px'}" 
@@ -362,21 +362,6 @@ document.getElementById('canvas').addEventListener('click', (e) => {
         selectedElement = document.getElementById('canvas');
         updatePropsPanel(selectedElement);
     }
-});
-
-//Изменение размера canvas
-window.addEventListener('resize', () => {
-    document.querySelectorAll('#canvas > *').forEach(el => {
-        const leftPx = el.offsetLeft;
-        const topPx = el.offsetTop;
-
-        const canvas = document.getElementById('canvas');
-        const leftPercent = (leftPx / canvas.offsetWidth) * 100;
-        const topPercent = (topPx / canvas.offsetHeight) * 100;
-
-        el.style.left = `${leftPercent}%`;
-        el.style.top = `${topPercent}%`;
-    });
 });
 
 //Проверка валидности ссылки

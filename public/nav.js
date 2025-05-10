@@ -115,7 +115,7 @@ function renderResults(data) {
             const li = document.createElement('li');
             li.innerHTML = `
                 <a href="/profile/${user.id}" class="flex items-center gap-3 hover:bg-gray-100 p-2 rounded">
-                    <img src="${user.avatar || '/default-avatar.png'}" alt="avatar" class="w-10 h-10 rounded-full object-cover border">
+                    <img src="${user.avatar || '/uploads/default-avatar-hq.png'}" alt="avatar" class="w-8 h-8 rounded-full object-cover border-1">
                     <span class="font-semibold">${highlight(user.name, query)}</span>
                 </a>
             `;
