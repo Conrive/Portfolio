@@ -11,7 +11,7 @@
 <%- include('partials/nav') %>
 
 <div class="bg-gray-100 min-h-screen flex">
-    <!-- Sidebar -->
+    <!-- Сайдбар -->
     <aside class="w-64 bg-white border-r min-h-screen p-6 space-y-4 sticky top-0">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Админка</h2>
         <nav class="space-y-2">
@@ -22,11 +22,11 @@
         </nav>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Основной контент, панель -->
     <main class="flex-1 p-6">
         <h1 class="text-3xl font-bold mb-8 text-gray-800">Панель администратора</h1>
 
-        <!-- Stats -->
+        <!-- Раздел со статистикой и последними регистрациями -->
         <div id="tab-stats" class="tab-content hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white shadow-lg rounded-lg p-6">
@@ -49,8 +49,18 @@
             </div>
         </div>
 
-        <!-- Users Tab -->
+        <!-- Раздел с юзерами -->
         <div id="tab-users" class="tab-content hidden space-y-6">
+            <div class="flex gap-3 justify-start h-10">
+                <button onclick="openUserModal()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    ➕ Создать пользователя
+                </button>
+                <% if (created) { %>
+                    <div id="successMessage" class="bg-green-100 text-green-800 px-4 py-2 rounded border border-green-300 text-center">
+                        ✅ Пользователь успешно создан!
+                    </div>
+                <% } %>
+            </div>
             <% users.forEach(user => { %>
                 <div class="bg-white shadow-lg rounded-lg p-4">
                     <div class="grid md:grid-cols-[2rem_3rem_1fr_1fr_1fr_1fr_auto_auto] gap-3 items-center">
@@ -65,7 +75,6 @@
                                 <option value="teacher" <%= user.role === 3 ? 'selected' : '' %>>Teacher</option>
                                 <option value="admin" <%= user.role === 2 ? 'selected' : '' %>>Admin</option>
                             </select>
-                            <div class="text-sm text-gray-400 whitespace-nowrap"><%= user.created_at %></div>
                             <button class="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 cursor-pointer">💾</button>
                         </form>
                         <form action="/admin/user/delete/<%= user.id %>" method="POST" onsubmit="return confirm('Удалить пользователя?')">
@@ -77,7 +86,7 @@
             <% }) %>
         </div>
 
-        <!-- Projects -->
+        <!-- Раздел с проектами -->
         <div id="tab-projects" class="tab-content hidden">
             <% projects.forEach(project => { %>
                 <div class="bg-white shadow-lg rounded-lg p-4 mb-4 space-y-2">
@@ -100,9 +109,35 @@
             <% }) %>
         </div>
 
-        <!-- Logs -->
+        <!-- Раздел с логами -->
         <div id="tab-logs" class="tab-content hidden">
-            <div class="bg-white p-6 rounded shadow-lg max-h-[400px] overflow-y-auto text-sm text-gray-700 space-y-2">
+            <form method="GET" action="/admin" class="mb-4 flex flex-wrap gap-2 items-center text-sm">
+                <select name="user_id" class="border rounded p-1">
+                    <option value="">Все админы</option>
+                    <% admins.forEach(admin => { %>
+                        <option value="<%= admin.id %>" <%= +admin.id === +query.user_id ? 'selected' : '' %>><%= admin.name %></option>
+                    <% }) %>
+                </select>
+
+                <select name="action_type" class="border rounded p-1">
+                    <option value="">Все действия</option>
+                    <option value="create" <%= query.action_type === 'create' ? 'selected' : '' %>>Создание</option>
+                    <option value="update" <%= query.action_type === 'update' ? 'selected' : '' %>>Обновление</option>
+                    <option value="delete" <%= query.action_type === 'delete' ? 'selected' : '' %>>Удаление</option>
+                </select>
+
+                <label class="text-gray-600">С:
+                    <input type="date" name="date_from" value="<%= query.date_from || '' %>" class="border rounded p-1 ml-1" />
+                </label>
+
+                <label class="text-gray-600 ml-2">По:
+                    <input type="date" name="date_to" value="<%= query.date_to || '' %>" class="border rounded p-1 ml-1" />
+                </label>
+
+                <!--<button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Фильтровать</button>-->
+            </form>
+
+            <div class="bg-white p-6 rounded shadow-lg max-h-[700px] overflow-y-auto text-sm text-gray-700 space-y-2">
                 <% logs.forEach(log => { %>
                     <div class="border-b py-2">
                         <span class="text-gray-500"><%= new Date(log.timestamp).toLocaleString() %></span> —
@@ -114,16 +149,73 @@
     </main>
 </div>
 
+<!-- Модальное окно -->
+<div id="userModal" class="fixed inset-0 items-center justify-center z-50 hidden" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+        <button onclick="closeUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-xl font-bold">×</button>
+        <h2 class="text-xl font-semibold mb-4">Создание нового пользователя</h2>
+
+        <form action="/admin/user/create" method="POST" class="space-y-3">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="text" name="name" placeholder="Имя" required class="border p-2 w-full rounded">
+            <input type="email" name="email" placeholder="Email" required class="border p-2 w-full rounded">
+            <input type="password" name="password" placeholder="Пароль" required class="border p-2 w-full rounded">
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Создать</button>
+        </form>
+    </div>
+</div>
+
 <script>
     function switchTab(tabId, event) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
         document.getElementById('tab-' + tabId).classList.remove('hidden');
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('bg-gray-200'));
+
         if (event) event.target.classList.add('bg-gray-200');
+
+        // Сохраняем в localStorage
+        localStorage.setItem('adminTab', tabId);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        switchTab('stats');
+        const urlParams = new URLSearchParams(window.location.search);
+        const created = urlParams.get('created') === 'true';
+
+        // Открыть нужную вкладку
+        const tabToShow = created ? 'users' : (localStorage.getItem('adminTab') || 'stats');
+        switchTab(tabToShow);
+
+        // Скрыть сообщение через 5 сек и удалить параметр из URL
+        if (created) {
+            setTimeout(() => {
+                const msg = document.getElementById('successMessage');
+                if (msg) msg.style.display = 'none';
+
+                // Удаляем параметр `?created=true` из URL без перезагрузки
+                urlParams.delete('created');
+                const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                window.history.replaceState({}, document.title, newUrl);
+            }, 5000);
+        }
+    });
+
+    function openUserModal() {
+        document.getElementById('userModal').classList.remove('hidden');
+        document.getElementById('userModal').classList.add('flex');
+    }
+
+    function closeUserModal() {
+        document.getElementById('userModal').classList.remove('flex');
+        document.getElementById('userModal').classList.add('hidden');
+    }
+
+    const filterForm = document.querySelector('form[action="/admin"]');
+    const inputs = filterForm.querySelectorAll('select, input');
+
+    inputs.forEach(input => {
+        input.addEventListener('change', () => {
+            filterForm.submit();
+        });
     });
 </script>
 </body>

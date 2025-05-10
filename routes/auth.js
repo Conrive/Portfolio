@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { createUser, findUserByEmail, findUserByUsername } = require('../models/userModel');
+const { findUserByEmail, findUserByUsername } = require('../models/userModel');
 const rateLimit = require('express-rate-limit');
 
 //Ограничитель количества попыток для входа
@@ -80,27 +80,6 @@ router.post('/login', loginLimiter, async (req, res) => {
         linkedin: user.linkedin,
         role: user.role };
     res.redirect('/');
-});
-
-//форма регистрации
-router.get('/register', (req, res) => {
-    const token = req.csrfToken();
-    res.render('register', { error: null, csrfToken: token });
-});
-router.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
-
-    if (await findUserByEmail(email)) {
-        return res.render('register', { error: 'Email уже используется' });
-    }
-
-    try {
-        await createUser(name, email, password);
-        res.redirect('/login');
-    } catch (err) {
-        console.log(err);
-        res.render('/register', { error: 'Ошибка регистрации' });
-    }
 });
 
 //Форма выхода из системы
