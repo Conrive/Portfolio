@@ -647,6 +647,9 @@ async function loadCanvas() {
                             element.style.width = el.styles.width || '100px';
                             element.style.height = el.styles.height || '100px';
                             element.style.fontSize = el.styles.fontSize || '16px';
+                            element.style.textDecoration = el.styles.textDecoration;
+                            element.style.fontWeight = el.styles.fontWeight;
+                            element.style.fontFamily = el.styles.fontFamily;
                             element.style.color = el.styles.color || 'black';
                             element.style.backgroundColor = el.styles.backgroundColor || 'transparent';
                             element.style.rotate = el.styles.rotate || '0deg';
@@ -654,6 +657,7 @@ async function loadCanvas() {
                             element.textContent = el.text || '';
                             element.style.zIndex = el.styles.zIndex || '0';
                             element.dataset.uid = el.dataset.uid;
+                            element.style.fontStyle = el.styles.fontStyle;
                             element.contentEditable = true;
                             break;
 
@@ -704,7 +708,9 @@ async function loadCanvas() {
                             element.style.left = el.styles.left || '0px';
                             element.style.top = el.styles.top || '0px';
                             element.style.fontSize = el.styles.fontSize || '16px';
-                            element.style.textDecoration = 'underline';
+                            element.style.textDecoration = el.styles.textDecoration;
+                            element.style.fontWeight = el.styles.fontWeight;
+                            element.style.fontFamily = el.styles.fontFamily;
                             element.style.color = el.styles.color || 'black';
                             element.style.rotate = el.styles.rotate || '0deg';
                             element.target = el.target || '_blank';

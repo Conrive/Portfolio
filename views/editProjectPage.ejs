@@ -35,7 +35,7 @@
                         <div class="mt-4 flex text-sm/6 text-gray-600">
                             <label for="file-upload" class="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 focus-within:outline-hidden hover:text-indigo-500">
                                 <span>Загрузить изображение</span>
-                                <input id="file-upload" name="image" type="file" class="sr-only" accept="image/png, image/jpeg, image/webp">
+                                <input id="file-upload" name="image" type="file" class="sr-only" accept="image/png, image/jpeg, image/webp" onchange="checkFileSize(this)">
                             </label>
                         </div>
                         <p class="text-xs/5 text-gray-600">PNG, JPG, WEBP</p>
@@ -70,7 +70,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 <script src="/pdfExport.js"></script>
-
 <script src="/editor.js"></script>
+<script src="/checkFileSize"></script>
 </body>
 </html>
