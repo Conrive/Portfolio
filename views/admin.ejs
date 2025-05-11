@@ -43,7 +43,7 @@
                 <h3 class="text-lg font-semibold text-gray-800 mb-3">🆕 Последние регистрации:</h3>
                 <ul class="list-disc pl-5 text-gray-700 space-y-1">
                     <% stats.recentUsers.forEach(u => { %>
-                        <li><%= u.name %> — <%= new Date(u.created_at).toLocaleDateString() %></li>
+                        <li><%= u.name %> — <%= new Date(new Date(u.created_at).getTime() + 3 * 60 * 60 * 1000).toLocaleString() %></li>
                     <% }) %>
                 </ul>
             </div>
@@ -71,9 +71,9 @@
                             <input name="name" value="<%= user.name %>" class="border p-2 rounded w-full" placeholder="Имя" />
                             <input name="bio" value="<%= user.bio %>" class="border p-2 rounded w-full" placeholder="О себе" />
                             <select name="role" class="border p-2 rounded w-full">
-                                <option value="student" <%= user.role === 1 ? 'selected' : '' %>>Student</option>
-                                <option value="teacher" <%= user.role === 3 ? 'selected' : '' %>>Teacher</option>
-                                <option value="admin" <%= user.role === 2 ? 'selected' : '' %>>Admin</option>
+                                <option value="1" <%= user.role === 1 ? 'selected' : '' %>>Student</option>
+                                <option value="3" <%= user.role === 3 ? 'selected' : '' %>>Teacher</option>
+                                <option value="2" <%= user.role === 2 ? 'selected' : '' %>>Admin</option>
                             </select>
                             <button class="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 cursor-pointer">💾</button>
                         </form>
@@ -140,7 +140,9 @@
             <div class="bg-white p-6 rounded shadow-lg max-h-[700px] overflow-y-auto text-sm text-gray-700 space-y-2">
                 <% logs.forEach(log => { %>
                     <div class="border-b py-2">
-                        <span class="text-gray-500"><%= new Date(log.timestamp).toLocaleString() %></span> —
+                        <span class="text-gray-500"><%=
+                            new Date(new Date(log.timestamp).getTime() + 3 * 60 * 60 * 1000).toLocaleString()
+                        %></span> —
                         <strong><%= log.username || 'System' %></strong>: <%= log.action %>
                     </div>
                 <% }) %>

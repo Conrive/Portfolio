@@ -19,12 +19,13 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div>
             <label class="block text-sm font-medium">Имя:</label>
-            <input type="text" name="name" value="<%= user.name %>" class="w-full p-2 border rounded" required>
+            <input type="text" name="name" value="<%= user.name %>" class="w-full p-2 border rounded" maxlength="50" required>
         </div>
 
         <div>
             <label class="block text-sm font-medium">О себе:</label>
-            <textarea name="bio" class="w-full p-2 border rounded"><%= user.bio %></textarea>
+            <textarea id="input" name="bio" class="w-full p-2 border rounded" maxlength="1000"><%= user.bio %></textarea>
+            <span id="char-count" class="text-xs text-gray-500">0 / 1000</span>
         </div>
 
         <div>
@@ -83,5 +84,19 @@
 </div>
 
 <script src="/checkFileSize"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const textarea = document.getElementById('input');
+        textarea.value = textarea.value.replace(/^\s+/, '');
+        const counter = document.getElementById('char-count');
+
+        if (textarea && counter) {
+            textarea.addEventListener('input', () => {
+                const length = textarea.value.length;
+                counter.textContent = `${length} / 1000`;
+            });
+        }
+    });
+</script>
 </body>
 </html>

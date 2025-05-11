@@ -100,6 +100,79 @@
             <% } %>
         </div>
     </div>
+
+    <!-- Комментарии -->
+    <div class="mt-10 bg-white p-4 rounded shadow">
+        <h2 class="text-xl font-semibold mb-4">Комментарии преподавателей</h2>
+
+        <% if (comments && comments.length > 0) { %>
+            <div class="space-y-3">
+                <% comments.forEach(comment => { %>
+                    <div class="border p-4 rounded relative group bg-gray-50 hover:bg-gray-100">
+                        <!-- Автор -->
+                        <div class="flex items-center space-x-3 mb-2">
+                            <% if (comment.teacher_avatar) { %>
+                                <img src="<%= comment.teacher_avatar %>" alt="avatar" class="w-8 h-8 rounded-full">
+                            <% } else { %>
+                                <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-white text-sm">
+                                    <%= comment.teacher_name[0] %>
+                                </div>
+                            <% } %>
+                            <div class="text-sm font-semibold">
+                                <%= comment.teacher_name %>
+                                <% if (comment.teacher_role === 3) { %>
+                                    <span class="text-yellow-500" title="Преподаватель">★</span>
+                                <% } %>
+                            </div>
+                            <div class="text-xs text-gray-500 ml-auto"><%= new Date(new Date(comment.created_at).getTime() + 3 * 60 * 60 * 1000).toLocaleString() %></div>
+                        </div>
+
+                        <!-- Контент комментария -->
+                        <div class="text-gray-800 prose max-w-none" data-md>
+                            <%= comment.content %>
+                        </div>
+
+                        <!-- Кнопка редактирования -->
+                        <% if (currentUser && currentUser.id === comment.teacher_id) { %>
+                            <button class="absolute top-2 right-2 text-blue-500 hover:text-blue-700 text-xs underline edit-comment-btn"
+                                    data-comment-id="<%= comment.id %>"
+                                    data-content="<%= comment.content.replace(/"/g, '&quot;') %>">
+                                Редактировать
+                            </button>
+                        <% } %>
+
+                        <% if (currentUser && (currentUser.id === comment.teacher_id || currentUser.role === 2)) { %>
+                            <form action="/profile/comment/delete/<%= comment.id %>" method="POST" onsubmit="return confirm('Удалить комментарий?');">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <button type="submit" class="text-red-500 hover:underline text-xs ml-2">Удалить</button>
+                            </form>
+                        <% } %>
+                    </div>
+                <% }) %>
+            </div>
+    <% } else { %>
+            <p class="text-gray-500">Комментариев пока нет.</p>
+        <% } %>
+
+        <% if (currentUser && (currentUser.role === 2 || currentUser.role === 3)) { %>
+            <form id="comment-form" action="/profile/comment/<%= profileUser.id %>" method="POST" class="mt-6 hidden transition-all duration-200">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <textarea id="comment-input" name="content" rows="4" maxlength="1000"
+                          placeholder="Оставьте комментарий..."
+                          class="w-full border rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-y"></textarea>
+                <div class="flex justify-between items-center mt-2">
+                    <span id="char-count" class="text-xs text-gray-500">0 / 1000</span>
+                    <button type="submit" id="submit-btn"
+                            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Отправить
+                    </button>
+                </div>
+            </form>
+            <div id="comment-placeholder" class="border border-dashed border-gray-300 p-3 mt-6 text-gray-500 text-sm rounded cursor-text">
+                Кликните сюда, чтобы оставить комментарий...
+            </div>
+        <% } %>
+    </div>
 </div>
 </body>
 <script>
@@ -109,5 +182,20 @@
             window.location.href = `/project/${projectId}/view`;
         });
     });
+
+    function parseMarkdown(text) {
+        return text
+            .replace(/(?:\r\n|\r|\n)/g, '')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/_(.*?)_/g, '<em>$1</em>')
+            .replace(/~~(.*?)~~/g, '<s>$1</s>')
+            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-blue-500 hover:underline" target="_blank">$1</a>');
+    }
+
+    document.querySelectorAll('[data-md]').forEach(el => {
+        const raw = el.textContent;
+        el.innerHTML = parseMarkdown(raw);
+    });
 </script>
+<script src="/commentEditor.js"></script>
 </html>

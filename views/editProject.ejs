@@ -13,11 +13,12 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div>
             <label class="block text-sm font-medium">Название проекта:</label>
-            <input type="text" name="title" value="<%= project.title %>" class="w-full p-2 border rounded" required>
+            <input type="text" name="title" value="<%= project.title %>" class="w-full p-2 border rounded" maxlength="50" required>
         </div>
         <div>
             <label class="block text-sm font-medium">Описание:</label>
-            <textarea name="description" class="w-full p-2 border rounded"><%= project.description %></textarea>
+            <textarea id="input" name="description" class="w-full p-2 border rounded" maxlength="1000"><%= project.description %></textarea>
+            <span id="char-count" class="text-xs text-gray-500">0 / 1000</span>
         </div>
         <div>
             <label class="block text-sm font-medium">Ссылка на проект:</label>
@@ -46,5 +47,19 @@
 </div>
 
 <script src="/checkFileSize"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const textarea = document.getElementById('input');
+        textarea.value = textarea.value.replace(/^\s+/, '');
+        const counter = document.getElementById('char-count');
+
+        if (textarea && counter) {
+            textarea.addEventListener('input', () => {
+                const length = textarea.value.length;
+                counter.textContent = `${length} / 1000`;
+            });
+        }
+    });
+</script>
 </body>
 </html>
