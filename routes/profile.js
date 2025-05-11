@@ -131,7 +131,7 @@ router.post('/comment/:studentId', ensureAuth, (req, res) => {
     });
 });
 
-// Маршрут изменения комментария
+// Обновление комментария + пометка "изменено"
 router.post('/comment/edit/:id', ensureAuth, express.json(), (req, res) => {
     const { id } = req.params;
     const content = req.body.content.trimStart();
@@ -141,7 +141,7 @@ router.post('/comment/edit/:id', ensureAuth, express.json(), (req, res) => {
         if (err || !comment) return res.sendStatus(404);
         if (comment.teacher_id !== userId) return res.sendStatus(403);
 
-        db.run('UPDATE comments SET content = ? WHERE id = ?', [content, id], err2 => {
+        db.run('UPDATE comments SET content = ?, edited = 1 WHERE id = ?', [content, id], err2 => {
             if (err2) return res.sendStatus(500);
             res.sendStatus(200);
         });
