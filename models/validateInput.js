@@ -3,9 +3,11 @@
 //Работает в паре с экранированием <%= %>.
 
 const dangerousPatterns = [
-    /('|--|;|\/\*|\*\/|xp_cmdshell|union\s+select|\bor\b|\band\b)/i,
-    /<script.*?>.*?<\/script>/i,
-    /\$ne|\$gt|\$where|\$regex/i
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,  // XSS script tag
+    /\$where|\$regex|\$ne|\$gt/i,                           // NoSQL injection
+    /union\s+select\b/i,                                    // SQL injection
+    /xp_cmdshell/i,                                         // MSSQL injection
+    /(\b(or|and)\b\s+\d+=\d+)/i                             // Boolean-based SQL injection
 ];
 
 function isMalicious(value) {

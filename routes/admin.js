@@ -24,6 +24,12 @@ router.get('/', checkAdmin, async (req, res) => {
     const recentUsers = await dbAll('SELECT name, created_at FROM users ORDER BY created_at DESC LIMIT 5');
     const todos = await dbAll('SELECT * FROM todos ORDER BY position ASC');
     const todoAdminLinks = await dbAll('SELECT * FROM todo_admins');
+    const messages = await dbAll(`
+        SELECT admin_chat_messages.*, users.name as username, users.cover as avatar
+        FROM admin_chat_messages
+        JOIN users ON users.id = admin_chat_messages.user_id
+        ORDER BY admin_chat_messages.created_at ASC
+    `);
 
     const todoAdminsMap = {};
     todoAdminLinks.forEach(link => {
@@ -86,6 +92,8 @@ router.get('/', checkAdmin, async (req, res) => {
         todos,
         todoAdminsMap,
         adminTodoMap,
+        currentUser: req.session.user,
+        messages,
         query: req.query,
         created: req.query.created === 'true'
     });
@@ -309,6 +317,49 @@ router.post('/todo/assign', checkAdmin, async (req, res) => {
     }
 
     await logAction(req.session.user.id, `Assigned admin(s) to task (ID: ${todo_id}): [${ids.join(', ')}]`);
+    res.redirect('/admin');
+});
+
+// Отправка сообщения
+router.post('/chat/send', checkAdmin, async (req, res) => {
+    const { text } = req.body;
+    if (!text.trim()) return res.redirect('/admin');
+
+    await dbRun('INSERT INTO admin_chat_messages (user_id, text) VALUES (?, ?)', [
+        req.session.user.id,
+        text.trim(),
+    ]);
+
+    await logAction(req.session.user.id, 'Sent message to admin chat');
+    res.redirect('/admin');
+});
+
+// Редактирование сообщения
+router.post('/chat/edit/:id', checkAdmin, async (req, res) => {
+    const messageId = req.params.id;
+    const { text } = req.body;
+    const message = await dbGet('SELECT * FROM admin_chat_messages WHERE id = ?', [messageId]);
+
+    if (!message || message.user_id !== req.session.user.id) {
+        return res.status(403).send('Forbidden');
+    }
+
+    await dbRun('UPDATE admin_chat_messages SET text = ?, edited = 1 WHERE id = ?', [text.trim(), messageId]);
+    await logAction(req.session.user.id, `Edited admin chat message (ID: ${messageId})`);
+    res.redirect('/admin');
+});
+
+// Удаление сообщения
+router.post('/chat/delete/:id', checkAdmin, async (req, res) => {
+    const messageId = req.params.id;
+    const message = await dbGet('SELECT * FROM admin_chat_messages WHERE id = ?', [messageId]);
+
+    if (!message || message.user_id !== req.session.user.id) {
+        return res.status(403).send('Forbidden');
+    }
+
+    await dbRun('DELETE FROM admin_chat_messages WHERE id = ?', [messageId]);
+    await logAction(req.session.user.id, `Deleted admin chat message (ID: ${messageId})`);
     res.redirect('/admin');
 });
 

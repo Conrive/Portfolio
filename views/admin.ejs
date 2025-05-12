@@ -152,28 +152,75 @@
 
         <!-- Таблица с командой -->
         <div id="tab-team" class="tab-content hidden flex flex-row gap-3">
-            <div id="admin-task-view" class="bg-white rounded-lg p-6 shadow-lg space-y-4 w-2/4">
-                <h2 class="text-xl font-semibold">Задачи по администраторам</h2>
+            <div id="admin-panel" class="flex flex-col w-2/4 gap-3">
+                <div id="admin-chat" class="bg-white rounded-lg p-6 shadow-lg flex flex-col h-[500px] overflow-hidden">
+                    <h2 class="text-xl font-semibold mb-4">💬 Админский чат</h2>
+                    <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 pr-2">
+                        <% messages.forEach(message => { %>
+                            <div class="flex <%= message.user_id === currentUser.id ? 'justify-end' : 'justify-start' %>">
+                                <div class="max-w-[70%] mb-3 p-3 rounded-lg shadow-md relative <%= message.user_id === currentUser.id ? 'bg-blue-100' : 'bg-gray-100' %>">
+                                    <div class="flex items-center justify-between mb-1 gap-3">
+                                        <div class="flex items-center gap-2">
+                                            <img src="<%= message.avatar || '/uploads/default-avatar-hq.png' %>" class="w-6 h-6 rounded-full">
+                                            <span class="font-semibold text-sm"><%= message.username %></span>
+                                        </div>
+                                        <% if (message.user_id === currentUser.id) { %>
+                                            <div class="flex gap-2 text-xs text-blue-500">
+                                                <button type="button" onclick="openEditModal(<%= message.id %>, `<%- message.text.replace(/`/g, '\\`') %>`)">✏️</button>
+                                                <form action="/admin/chat/delete/<%= message.id %>" method="POST" onsubmit="return confirm('Удалить сообщение?')">
+                                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                                    <button type="submit">🗑️</button>
+                                                </form>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                    <p class="text-sm" name="text">
+                                        <%= message.text %>
+                                        <% if (message.edited) { %><span class="text-xs text-gray-500 ml-2">(изменено)</span><% } %>
+                                    </p>
 
-                <% admins.forEach(admin => { %>
-                    <div class="border rounded p-4">
-                        <div class="flex items-center justify-between cursor-pointer" onclick="toggleTasks('<%= admin.id %>')">
-                            <div class="flex items-center gap-3">
-                                <img src="<%= admin.avatar || '/uploads/default-avatar-hq.png' %>" alt="avatar" class="w-10 h-10 rounded-full">
-                                <span class="font-semibold"><%= admin.name %></span>
+                                    <p class="text-xs text-gray-500 mt-1 text-right">
+                                        <%= new Date(message.created_at).toLocaleString('ru-RU', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            day: '2-digit',
+                                            month: 'short'
+                                        }) %>
+                                    </p>
+                                </div>
                             </div>
-                            <span class="text-gray-400 text-sm">▼</span>
-                        </div>
-                        <ul id="tasks-for-<%= admin.id %>" class="ml-12 mt-3 hidden list-disc text-gray-700">
-                            <% (adminTodoMap[admin.id] || []).forEach(task => { %>
-                                <li><%= task.text %> <% if (task.completed) { %><span class="text-green-500">(выполнено)</span><% } %></li>
-                            <% }) %>
-                            <% if (!(adminTodoMap[admin.id] || []).length) { %>
-                                <li class="text-gray-400 italic">Нет задач</li>
-                            <% } %>
-                        </ul>
+                        <% }) %>
                     </div>
-                <% }) %>
+
+                    <form action="/admin/chat/send" method="POST" class="mt-4 flex gap-3">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <input name="text" required class="border rounded px-3 py-2 flex-1" placeholder="Введите сообщение..." autocomplete="off">
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">📤</button>
+                    </form>
+                </div>
+
+                <div id="admin-task-view" class="bg-white rounded-lg p-6 shadow-lg space-y-4">
+                    <h2 class="text-xl font-semibold">Задачи по администраторам</h2>
+                    <% admins.forEach(admin => { %>
+                        <div class="border rounded p-2 border-gray-300">
+                            <div class="flex items-center justify-between cursor-pointer" onclick="toggleTasks('<%= admin.id %>')">
+                                <div class="flex items-center gap-3">
+                                    <img src="<%= admin.avatar || '/uploads/default-avatar-hq.png' %>" alt="avatar" class="w-10 h-10 rounded-full">
+                                    <span class="font-semibold"><%= admin.name %></span>
+                                </div>
+                                <span class="text-gray-400 text-sm">▼</span>
+                            </div>
+                            <ul id="tasks-for-<%= admin.id %>" class="ml-12 mt-3 hidden list-disc text-gray-700">
+                                <% (adminTodoMap[admin.id] || []).forEach(task => { %>
+                                    <li><%= task.text %> <% if (task.completed) { %><span class="text-green-500">(выполнено)</span><% } %></li>
+                                <% }) %>
+                                <% if (!(adminTodoMap[admin.id] || []).length) { %>
+                                    <li class="text-gray-400 italic">Нет задач</li>
+                                <% } %>
+                            </ul>
+                        </div>
+                    <% }) %>
+                </div>
             </div>
 
             <div id="todo-section" class="bg-white rounded-lg p-6 shadow-lg space-y-4 w-2/4">
@@ -274,6 +321,18 @@
         </form>
     </div>
 </div>
+
+<div id="edit-modal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background-color: rgba(0, 0, 0, 0.5);">
+    <form id="edit-form" method="POST" class="bg-white p-6 rounded shadow-lg w-full max-w-md">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <textarea name="text" required class="w-full border rounded p-2 mb-4"></textarea>
+        <div class="flex justify-end gap-2">
+            <button type="button" onclick="closeEditModal()" class="text-gray-500">Отмена</button>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Сохранить</button>
+        </div>
+    </form>
+</div>
+
 <script>
     function switchTab(tabId, event) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
@@ -322,6 +381,20 @@
             filterForm.submit();
         });
     });
+
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    function openEditModal(messageId, messageText) {
+        const form = document.getElementById('edit-form');
+        form.action = `/admin/chat/edit/${messageId}`;
+        form.text.value = messageText;
+        document.getElementById('edit-modal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+        document.getElementById('edit-modal').classList.add('hidden');
+    }
 
     function toggleEditForm(button) {
         const container = button.closest('.task-text-area');
