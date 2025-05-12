@@ -3,8 +3,11 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const crypto = require("crypto");
 const { findUserByEmail, findUserByUsername } = require('../models/userModel');
 const rateLimit = require('express-rate-limit');
+const db = require('../models/db');
+const nodemailer = require('nodemailer');
 
 //Ограничитель количества попыток для входа
 const loginLimiter = rateLimit({
@@ -17,8 +20,12 @@ const loginLimiter = rateLimit({
         const time = new Date().toISOString();
         console.warn(`[LOGIN RATE LIMIT] ${ip} превысил лимит входа — ${time}`);
 
-        res.status(429);
-        res.render('login', { error: 'Слишком много попыток входа. Попробуйте снова через 15 минут.' });
+        const token = req.csrfToken();
+
+        res.status(429).render('login', {
+            error: 'Слишком много попыток входа. Попробуйте снова через 15 минут.',
+            csrfToken: token
+        });
     }
 });
 
@@ -80,6 +87,63 @@ router.post('/login', loginLimiter, async (req, res) => {
         linkedin: user.linkedin,
         role: user.role };
     res.redirect('/');
+});
+
+//Форма восстановления
+router.get('/forgot', (req, res) => {
+    res.render('forgotPassword', { error: null, success: null, csrfToken: req.csrfToken() });
+});
+
+//Обработка формы восстановления
+router.post('/forgot', async (req, res) => {
+    const email = req.body.email.trim();
+    const token = req.csrfToken();
+
+    db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+        if (err) {
+            return res.render('forgotPassword', { error: 'Пользователь не найден', success: null, csrfToken: token });
+        }
+
+        const tempPassword = crypto.randomBytes(6).toString('hex');
+        const hashed = await bcrypt.hash(tempPassword, 10);
+
+        db.run('UPDATE users SET password = ? WHERE email = ?', [hashed, email], async (updateErr) => {
+            if (updateErr) {
+                return res.render('forgotPassword', { error: 'Ошибка сброса пароля', success: null, csrfToken: token });
+            }
+
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'portfol.io.ivpeksites@gmail.com',
+                    pass: 'pwos qkbd xeto hsqr'
+                }
+            });
+
+            const mailOptions = {
+                from: 'portfol.io.ivpeksites@gmail.com',
+                to: email,
+                subject: 'Сброс пароля',
+                text: `Здравствуйте!\n\nВаш новый временный пароль: ${tempPassword}\n\nПожалуйста, войдите с этим паролем и смените его в профиле.`
+            };
+
+            try {
+                await transporter.sendMail(mailOptions);
+                res.render('forgotPassword', {
+                    success: 'Временный пароль отправлен на почту',
+                    error: null,
+                    csrfToken: token
+                });
+            } catch (e) {
+                console.error(e);
+                res.render('forgotPassword', {
+                    error: 'Не удалось отправить email. Попробуйте позже.',
+                    success: null,
+                    csrfToken: token
+                });
+            }
+        });
+    });
 });
 
 //Форма выхода из системы

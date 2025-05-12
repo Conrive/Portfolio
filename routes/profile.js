@@ -7,6 +7,7 @@ const db = require('../models/db');
 const { deleteFileIfExists, upload, storage} = require('../public/fileHandling');
 const { ensureAuth } = require('../models/ensureAuth');
 
+
 router.get('/', ensureAuth, async (req, res) => {
     const user = req.session.user;
     const projects = await getUserProjects(user.id);
@@ -74,42 +75,107 @@ router.post('/:id/edit', ensureAuth,
     upload.fields([{ name: 'avatar' }, { name: 'cover' }]),
     (req, res) => {
 
-    const { name, bio, github, telegram, linkedin } = req.body;
+    const { name, bio, github, telegram, linkedin, email } = req.body;
     let avatar = req.session.user.avatar;
     let cover = req.session.user.cover;
 
     if (req.files['avatar']) {
-        deleteFileIfExists(avatar); // удаляем старый
+        deleteFileIfExists(avatar);
         avatar = `/uploads/${req.files['avatar'][0].filename}`;
     }
     if (req.files['cover']) {
-        deleteFileIfExists(cover); // удаляем старый
+        deleteFileIfExists(cover);
         cover = `/uploads/${req.files['cover'][0].filename}`;
     }
 
-    db.run(
-        'UPDATE users SET name = ?, bio = ?, github = ?, telegram = ?, linkedin = ?, avatar = ?, cover = ? WHERE id = ?',
-        [name, bio, github, telegram, linkedin, avatar, cover, req.session.user.id],
-        function (err) {
-            if (err) {
-                return res.render('editProfile', { user: req.body, error: "Ошибка при обновлении" });
-            }
+    const emailChanged = email !== req.session.user.email;
 
-            // Обновляем сессию
-            req.session.user.name = name;
-            req.session.user.bio = bio;
-            req.session.user.github = github;
-            req.session.user.telegram = telegram;
-            req.session.user.linkedin = linkedin;
-            req.session.user.avatar = avatar;
-            req.session.user.cover = cover;
+    const query = `
+        UPDATE users 
+        SET name = ?, bio = ?, github = ?, telegram = ?, linkedin = ?, avatar = ?, cover = ?, email = ?, email_verified = ?
+        WHERE id = ?`;
+    const params = [
+        name,
+        bio,
+        github,
+        telegram,
+        linkedin,
+        avatar,
+        cover,
+        email,
+        emailChanged ? 0 : req.session.user.email_verified, // сбрасываем подтверждение если изменилась почта
+        req.session.user.id
+    ];
 
-            return res.redirect(`/profile/${req.session.user.id}`);
+    db.run(query, params, (err) => {
+        if (err) {
+            console.error('Ошибка при обновлении профиля:', err.message);
+            return res.render('editProfile', {
+                user: req.body,
+                error: 'Ошибка при обновлении профиля',
+            });
         }
-    );
+
+        req.session.user.name = name;
+        req.session.user.bio = bio;
+        req.session.user.github = github;
+        req.session.user.telegram = telegram;
+        req.session.user.linkedin = linkedin;
+        req.session.user.avatar = avatar;
+        req.session.user.cover = cover;
+        req.session.user.email = email;
+        if (emailChanged) {
+            req.session.user.email_verified = 0;
+        }
+
+        return emailChanged
+            ? res.redirect('/login')
+            : res.redirect(`/profile/${req.session.user.id}`);
+    });
 });
 
-// Маршрут для отправки комментария
+//Форма смены пароля
+router.get('/:id/change-password', ensureAuth, (req, res) => {
+    const token = req.csrfToken();
+    res.render('changePassword', { csrfToken: token, error: null, success: null });
+});
+
+//Обработка смены пароля
+const bcrypt = require('bcrypt');
+
+router.post('/:id/change-password', ensureAuth, (req, res) => {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const userId = req.session.user.id;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        return res.render('changePassword', { csrfToken: req.csrfToken(), error: "Все поля обязательны", success: null });
+    }
+
+    if (newPassword !== confirmPassword) {
+        return res.render('changePassword', { csrfToken: req.csrfToken(), error: "Пароли не совпадают", success: null });
+    }
+
+    db.get('SELECT password FROM users WHERE id = ?', [userId], async (err, user) => {
+        if (err || !user) {
+            return res.render('changePassword', { csrfToken: req.csrfToken(), error: "Пользователь не найден", success: null });
+        }
+
+        const match = await bcrypt.compare(currentPassword, user.password);
+        if (!match) {
+            return res.render('changePassword', { csrfToken: req.csrfToken(), error: "Текущий пароль неверен", success: null });
+        }
+
+        const hashed = await bcrypt.hash(newPassword, 10);
+        db.run('UPDATE users SET password = ? WHERE id = ?', [hashed, userId], (updateErr) => {
+            if (updateErr) {
+                return res.render('changePassword', { csrfToken: req.csrfToken(), error: "Ошибка при обновлении пароля", success: null });
+            }
+            res.render('changePassword', { csrfToken: req.csrfToken(), error: null, success: "Пароль успешно обновлён" });
+        });
+    });
+});
+
+//Маршрут для отправки комментария
 router.post('/comment/:studentId', ensureAuth, (req, res) => {
     const { studentId } = req.params;
     const content = req.body.content.trimStart();
@@ -131,7 +197,7 @@ router.post('/comment/:studentId', ensureAuth, (req, res) => {
     });
 });
 
-// Обновление комментария + пометка "изменено"
+//Обновление комментария + пометка "изменено"
 router.post('/comment/edit/:id', ensureAuth, express.json(), (req, res) => {
     const { id } = req.params;
     const content = req.body.content.trimStart();
@@ -148,7 +214,7 @@ router.post('/comment/edit/:id', ensureAuth, express.json(), (req, res) => {
     });
 });
 
-// Удаление комментария
+//Удаление комментария
 router.post('/comment/delete/:commentId', ensureAuth, (req, res) => {
     const commentId = parseInt(req.params.commentId);
     const currentUser = req.session.user;
@@ -157,7 +223,6 @@ router.post('/comment/delete/:commentId', ensureAuth, (req, res) => {
         if (err || !comment) return res.status(404).send('Комментарий не найден');
 
         if (currentUser.role === 2 || currentUser.role === 3) {
-            // Админ может удалить любой, преподаватель — только свой
             if (currentUser.role === 3 && comment.teacher_id !== currentUser.id) {
                 return res.status(403).send('Нет прав на удаление');
             }

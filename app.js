@@ -8,6 +8,7 @@ const profileRoutes = require('./routes/profile');
 const projectRoutes = require('./routes/projects');
 const indexRoutes = require('./routes/index');
 const searchRoutes = require('./routes/search');
+const verifyRouter = require('./routes/emailHandle');
 const db = require("./models/db");
 const validateInput = require('./models/validateInput');
 const { promisify } = require('util');
@@ -66,5 +67,6 @@ app.use('/', projectRoutes);
 app.use('/profile', profileRoutes);
 app.use('/projects', projectRoutes);
 app.use('/admin', require('./routes/admin'));
+app.use('/verify', verifyRouter);
 
 app.listen(3000, () => console.log('Сервер запущен на http://localhost:3000'));

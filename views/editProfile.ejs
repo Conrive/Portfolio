@@ -6,8 +6,8 @@
     <title>Редактирование профиля</title>
     <link href="/css/output.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 flex justify-center items-center h-screen">
-<div class="max-w-md w-full bg-white mt-20 p-6 rounded shadow-md">
+<body class="bg-gray-100 flex justify-center items-center">
+<div class="max-w-md w-full bg-white mt-10 mb-10 p-6 rounded shadow-md">
     <% if (typeof error !== 'undefined') { %>
         <p class="text-red-500 text-sm font-medium"><%= error %></p>
     <% } %>
@@ -16,10 +16,19 @@
 
 
     <form action="/profile/<%= user.id %>/edit/?_csrf=<%=csrfToken%>" method="POST" enctype="multipart/form-data" class="space-y-4">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div>
             <label class="block text-sm font-medium">Имя:</label>
             <input type="text" name="name" value="<%= user.name %>" class="w-full p-2 border rounded" maxlength="50" required>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium">Электронная почта:</label>
+            <input type="email" name="email" value="<%= user.email %>" class="w-full p-2 border rounded" maxlength="255" required>
+            <% if (!user.email_verified) { %>
+                <p class="text-xs text-red-500 mt-1">Почта не подтверждена</p>
+            <% } else { %>
+                <p class="text-xs text-green-600 mt-1">Почта подтверждена</p>
+            <% } %>
         </div>
 
         <div>
@@ -77,13 +86,15 @@
             </div>
         </div>
 
+        <button class="bg-purple-700 text-white px-4 py-2 rounded w-full"><a href="/profile/<%= user.id %>/change-password">Смена пароля</a></button>
+
         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Сохранить</button>
     </form>
 
     <a href="/profile/<%= user.id %>" class="block text-center text-blue-500 mt-4">Назад в профиль</a>
 </div>
 
-<script src="/checkFileSize"></script>
+<script src="/checkFileSize.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const textarea = document.getElementById('input');

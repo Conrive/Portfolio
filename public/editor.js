@@ -592,8 +592,6 @@ async function saveCanvas() {
         },
         body: JSON.stringify({ layout: layoutData }),
     });
-
-    console.log(layoutData);
 }
 
 //Функция для загрузки canvas из lauout
