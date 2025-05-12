@@ -17,11 +17,28 @@ router.get('/', checkAdmin, async (req, res) => {
     const token = req.csrfToken();
 
     const users = await dbAll('SELECT * FROM users');
-    const admins = await dbAll("SELECT id, name FROM users WHERE role = '2'");
+    const admins = await dbAll("SELECT id, name, cover as avatar FROM users WHERE role = '2'");
     const projects = await dbAll('SELECT * FROM projects');
     const totalUsers = await dbGet('SELECT COUNT(*) as count FROM users');
     const totalProjects = await dbGet('SELECT COUNT(*) as count FROM projects');
     const recentUsers = await dbAll('SELECT name, created_at FROM users ORDER BY created_at DESC LIMIT 5');
+    const todos = await dbAll('SELECT * FROM todos ORDER BY position ASC');
+    const todoAdminLinks = await dbAll('SELECT * FROM todo_admins');
+
+    const todoAdminsMap = {};
+    todoAdminLinks.forEach(link => {
+        if (!todoAdminsMap[link.todo_id]) {
+            todoAdminsMap[link.todo_id] = [];
+        }
+        todoAdminsMap[link.todo_id].push(link.user_id);
+    });
+
+    const adminTodoMap = {};
+    todoAdminLinks.forEach(link => {
+        if (!adminTodoMap[link.user_id]) adminTodoMap[link.user_id] = [];
+        const todo = todos.find(t => t.id === link.todo_id);
+        if (todo) adminTodoMap[link.user_id].push(todo);
+    });
 
     let query = `
         SELECT logs.*, users.name as username 
@@ -66,6 +83,9 @@ router.get('/', checkAdmin, async (req, res) => {
             recentUsers
         },
         logs,
+        todos,
+        todoAdminsMap,
+        adminTodoMap,
         query: req.query,
         created: req.query.created === 'true'
     });
@@ -207,6 +227,89 @@ router.post('/project/delete/:id', checkAdmin, async (req, res) => {
             res.redirect('/admin');
         });
     });
+});
+
+// Получить список задач
+router.get('/todos', checkAdmin, async (req, res) => {
+    const todos = await dbAll('SELECT * FROM todos ORDER BY position ASC');
+    res.json(todos);
+});
+
+// Добавить задачу
+router.post('/todo/create', checkAdmin, async (req, res) => {
+    const { text } = req.body;
+    const maxPos = await dbGet('SELECT MAX(position) as max FROM todos');
+    const newPos = (maxPos?.max || 0) + 1;
+    await dbRun('INSERT INTO todos (text, position) VALUES (?, ?)', [text, newPos]);
+    await logAction(req.session.user.id, `Added task: "${text}"`);
+    res.redirect('/admin');
+});
+
+// Удалить задачу
+router.post('/todo/delete/:id', checkAdmin, async (req, res) => {
+    const todo = await dbGet('SELECT text FROM todos WHERE id = ?', [req.params.id]);
+    await dbRun('DELETE FROM todos WHERE id = ?', [req.params.id]);
+    await logAction(req.session.user.id, `Deleted task: "${todo?.text || 'undefined'}".`);
+    await dbRun('DELETE FROM todo_admins WHERE todo_id = ?', [req.params.id]);
+    res.redirect('/admin');
+});
+
+// Изменить задачу
+router.post('/todo/update/:id', checkAdmin, async (req, res) => {
+    const { text } = req.body;
+    await dbRun('UPDATE todos SET text = ? WHERE id = ?', [text, req.params.id]);
+    await logAction(req.session.user.id, `Updated task (ID: ${req.params.id}): "${text}"`);
+    res.redirect('/admin');
+});
+
+// Переключить статус выполнено
+router.post('/todo/toggle/:id', checkAdmin, async (req, res) => {
+    const todo = await dbGet('SELECT text, completed FROM todos WHERE id = ?', [req.params.id]);
+    const newStatus = todo.completed ? 0 : 1;
+    await dbRun('UPDATE todos SET completed = ? WHERE id = ?', [newStatus, req.params.id]);
+    await logAction(req.session.user.id, `Updated state of task (ID: ${req.params.id}): "${todo.text}" → ${newStatus ? 'выполнено' : 'не выполнено'}`);
+    res.redirect('/admin');
+});
+
+// Переместить задачу
+router.post('/todo/move', checkAdmin, async (req, res) => {
+    const { id, direction } = req.body;
+    const current = await dbGet('SELECT * FROM todos WHERE id = ?', [id]);
+    if (!current) return res.redirect('/admin');
+
+    const comparator = direction === 'up' ? '<' : '>';
+    const order = direction === 'up' ? 'DESC' : 'ASC';
+
+    const neighbor = await dbGet(
+        `SELECT * FROM todos WHERE position ${comparator} ? ORDER BY position ${order} LIMIT 1`,
+        [current.position]
+    );
+
+    if (!neighbor) return res.redirect('/admin');
+
+    await dbRun('UPDATE todos SET position = ? WHERE id = ?', [neighbor.position, current.id]);
+    await dbRun('UPDATE todos SET position = ? WHERE id = ?', [current.position, neighbor.id]);
+    await logAction(req.session.user.id, `Moved the task (ID: ${id}) ${direction === 'up' ? 'up' : 'down'}`);
+    res.redirect('/admin');
+});
+
+// Назначение админов
+router.post('/todo/assign', checkAdmin, async (req, res) => {
+    const { todo_id } = req.body;
+
+    const user_ids = req.body.user_ids || req.body['user_ids[]'];
+    const ids = Array.isArray(user_ids) ? user_ids : [user_ids].filter(Boolean);
+
+    await dbRun('DELETE FROM todo_admins WHERE todo_id = ?', [todo_id]);
+
+    if (ids.length > 0) {
+        const placeholders = ids.map(() => '(?, ?)').join(', ');
+        const values = ids.flatMap(user_id => [todo_id, user_id]);
+        await dbRun(`INSERT INTO todo_admins (todo_id, user_id) VALUES ${placeholders}`, values);
+    }
+
+    await logAction(req.session.user.id, `Assigned admin(s) to task (ID: ${todo_id}): [${ids.join(', ')}]`);
+    res.redirect('/admin');
 });
 
 module.exports = router;
