@@ -213,13 +213,40 @@ router.post('/delete/:id', ensureAuth, (req, res) => {
 //Форма страницы макета проекта
 router.get('/project/:id/view', (req, res) => {
     const projectId = req.params.id;
-
+    const token = req.csrfToken();
     db.get('SELECT * FROM projects WHERE id = ?', [projectId], (err, project) => {
         if (err || !project) {
             return res.status(404).send("Проект не найден");
         }
 
-        res.render('viewProject', { project });
+        res.render('viewProject', { project, csrfToken: token });
+    });
+});
+
+//Поставить "лайк"
+router.post('/project/:id/like', (req, res) => {
+    const projectId = req.params.id;
+    const userId = req.session.user?.id;
+
+    if (!userId) {
+        return res.status(401).json({ success: false, error: 'Авторизуйтесь для оценки проекта' });
+    }
+
+    db.get('SELECT * FROM likes WHERE user_id = ? AND project_id = ?', [userId, projectId], (err, row) => {
+        if (err) return res.status(500).json({ success: false, error: 'Ошибка базы данных' });
+
+        if (row) {
+            return res.json({ success: false, error: 'Вы уже оценили этот проект' });
+        }
+        db.run('INSERT INTO likes (user_id, project_id) VALUES (?, ?)', [userId, projectId], (err) => {
+            if (err) return res.status(500).json({ success: false, error: 'Ошибка при сохранении оценки' });
+
+            db.run('UPDATE projects SET popularity = popularity + 1 WHERE id = ?', [projectId], (err) => {
+                if (err) return res.status(500).json({ success: false, error: 'Ошибка обновления популярности' });
+
+                res.json({ success: true });
+            });
+        });
     });
 });
 

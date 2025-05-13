@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Просмотр проекта</title>
     <link href="/css/output.css" rel="stylesheet">
+    <meta name="csrf-token" content="<%= csrfToken %>">
     <style>
         html, body {
             margin: 0;
@@ -26,6 +27,10 @@
     <aside class="w-1/5 p-4 space-y-2 flex flex-col items-start">
         <% if (project.layout) { %>
             <button class="bg-red-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-red-600" onclick="exportCanvasToPDF()">Экспортировать в PDF</button>
+        <% } %>
+        <span class="text-sm text-gray-600 mt-1 block">Оценок: <%= project.popularity || 0 %></span>
+        <% if (user) { %>
+            <button id="likeBtn" class="bg-green-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-green-600">❤️ Понравилось</button>
         <% } %>
         <% if (user) { %>
             <button class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600"><a href="/profile/<%= user.id %>">Вернуться в профиль</a></button>
@@ -57,6 +62,31 @@
             const allElements = document.querySelectorAll('#canvas [contenteditable]');
             allElements.forEach(el => el.contentEditable = false);
         });
+
+        const likeBtn = document.getElementById('likeBtn');
+
+        if (likeBtn) {
+            likeBtn.addEventListener('click', () => {
+                fetch(`/project/<%= project.id %>/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'CSRF-Token': csrfToken
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            likeBtn.textContent = '✅ Спасибо за оценку!';
+                            likeBtn.disabled = true;
+                            likeBtn.classList.remove('bg-green-500');
+                            likeBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                        } else {
+                            alert(data.error || 'Ошибка при попытке поставить лайк');
+                        }
+                    });
+            });
+        }
     });
 </script>
 </body>
