@@ -53,6 +53,9 @@
         <!-- Раздел с юзерами -->
         <div id="tab-users" class="tab-content hidden space-y-6">
             <div class="flex gap-3 justify-start h-10">
+                <input type="text" id="userSearchInput" placeholder="Поиск пользователей..."
+                       class="border px-3 py-2 rounded w-64" />
+
                 <button onclick="openUserModal()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
                     ➕ Создать пользователя
                 </button>
@@ -62,58 +65,70 @@
                     </div>
                 <% } %>
             </div>
-            <% users.forEach(user => { %>
-                <div class="bg-white shadow-lg rounded-lg p-4">
-                    <div class="grid md:grid-cols-[2rem_3rem_1fr_1fr_1fr_1fr_auto_auto] gap-3 items-center">
-                        <div class="text-gray-500 font-mono">#<%= user.id %></div>
-                        <img src="<%= user.avatar || '/uploads/default-avatar-hq.png' %>" alt="avatar" class="w-12 h-12 rounded border">
-                        <form action="/admin/user/update/<%= user.id %>" method="POST" class="contents">
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                            <input name="name" value="<%= user.name %>" class="border p-2 rounded w-full" placeholder="Имя" />
-                            <input name="bio" value="<%= user.bio %>" class="border p-2 rounded w-full" placeholder="О себе" />
-                            <select name="role" class="border p-2 rounded w-full">
-                                <option value="1" <%= user.role === 1 ? 'selected' : '' %>>Student</option>
-                                <option value="3" <%= user.role === 3 ? 'selected' : '' %>>Teacher</option>
-                                <option value="2" <%= user.role === 2 ? 'selected' : '' %>>Admin</option>
-                            </select>
 
-                            <label class="flex items-center gap-2 text-sm">
-                                <input type="checkbox" name="hidden" value="1" class="w-6 h-6 bg-gray-700 rounded-md peer-checked:bg-blue-600 peer-checked:border-blue-600 border-2 border-gray-500" <%= user.hidden ? 'checked' : '' %> />
-                                Скрыт
-                            </label>
+            <div id="userList" class="space-y-6">
+                <% users.forEach(user => { %>
+                    <div class="bg-white shadow-lg rounded-lg p-4 user-card">
+                        <div class="grid md:grid-cols-[2rem_3rem_auto_1fr_auto_1fr_1fr_auto_auto] gap-3 items-center">
+                            <div class="text-gray-500 font-mono">#<%= user.id %></div>
+                            <img src="<%= user.avatar || '/uploads/default-avatar-hq.png' %>" alt="avatar" class="w-12 h-12 rounded border">
+                            <form action="/admin/user/update/<%= user.id %>" method="POST" class="contents">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <input name="name" value="<%= user.name %>" class="border p-2 rounded w-52" placeholder="Имя" />
+                                <input name="bio" value="<%= user.bio %>" class="border p-2 rounded w-full" placeholder="О себе" />
+                                <select name="role" class="border p-2 rounded w-52">
+                                    <option value="1" <%= user.role === 1 ? 'selected' : '' %>>Student</option>
+                                    <option value="3" <%= user.role === 3 ? 'selected' : '' %>>Teacher</option>
+                                    <option value="2" <%= user.role === 2 ? 'selected' : '' %>>Admin</option>
+                                </select>
 
-                            <button class="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 cursor-pointer">💾</button>
-                        </form>
-                        <form action="/admin/user/delete/<%= user.id %>" method="POST" onsubmit="return confirm('Удалить пользователя?')">
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                            <button class="text-red-500 text-lg hover:text-red-700 cursor-pointer">🗑️</button>
-                        </form>
+                                <div class="text-gray-500 text-sm"><%= user.created_at %></div>
+
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" name="hidden" value="1" class="w-6 h-6 bg-gray-700 rounded-md peer-checked:bg-blue-600 peer-checked:border-blue-600 border-2 border-gray-500" <%= user.hidden ? 'checked' : '' %> />
+                                    Скрыт
+                                </label>
+
+                                <button class="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 cursor-pointer">💾</button>
+                            </form>
+                            <form action="/admin/user/delete/<%= user.id %>" method="POST" onsubmit="return confirm('Удалить пользователя?')">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <button class="text-red-500 text-lg hover:text-red-700 cursor-pointer">🗑️</button>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            <% }) %>
+                <% }) %>
+            </div>
         </div>
 
         <!-- Раздел с проектами -->
-        <div id="tab-projects" class="tab-content hidden">
-            <% projects.forEach(project => { %>
-                <div class="bg-white shadow-lg rounded-lg p-4 mb-4 space-y-2">
-                    <div class="grid md:grid-cols-[2rem_1fr_1fr_auto_1fr_auto_auto] gap-3 items-center">
-                        <form action="/admin/project/update/<%= project.id %>" method="POST" class="contents">
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                            <div class="text-gray-600 font-mono">#<%= project.id %></div>
-                            <input name="title" value="<%= project.title %>" class="border p-2 rounded w-full" placeholder="Название" />
-                            <input name="description" value="<%= project.description %>" class="border p-2 rounded w-full" placeholder="Описание" />
-                            <div class="text-gray-500 text-sm">Автор ID: <%= project.user_id %></div>
-                            <div class="text-gray-500 text-sm"><%= project.created_at %></div>
-                            <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer">💾</button>
-                        </form>
-                        <form action="/admin/project/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?')">
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                            <button class="text-red-500 text-lg hover:text-red-700 cursor-pointer">🗑️</button>
-                        </form>
+        <div id="tab-projects" class="tab-content hidden space-y-6">
+            <div class="flex gap-3 justify-start h-10">
+                <input type="text" id="projectSearchInput" placeholder="Поиск пользователей..."
+                       class="border px-3 py-2 rounded w-64" />
+            </div>
+
+            <div id="projectList" class="space-y-6">
+                <% projects.forEach(project => { %>
+                    <div class="bg-white shadow-lg rounded-lg p-4 mb-4 space-y-2 project-card">
+                        <div class="grid md:grid-cols-[2rem_auto_1fr_auto_1fr_auto_auto] gap-3 items-center">
+                            <form action="/admin/project/update/<%= project.id %>" method="POST" class="contents">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <div class="text-gray-600 font-mono">#<%= project.id %></div>
+                                <input name="title" value="<%= project.title %>" class="border p-2 rounded w-52" placeholder="Название" />
+                                <input name="description" value="<%= project.description %>" class="border p-2 rounded w-full" placeholder="Описание" />
+                                <div class="text-gray-500 text-sm">Автор ID: <%= project.user_id %></div>
+                                <div class="text-gray-500 text-sm"><%= project.created_at %></div>
+                                <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer">💾</button>
+                            </form>
+                            <form action="/admin/project/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?')">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <button class="text-red-500 text-lg hover:text-red-700 cursor-pointer">🗑️</button>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            <% }) %>
+                <% }) %>
+            </div>
         </div>
 
         <!-- Раздел с логами -->
@@ -201,7 +216,7 @@
                     <form action="/admin/chat/send" method="POST" class="mt-4 flex gap-3">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <input name="text" required class="border rounded px-3 py-2 flex-1" placeholder="Введите сообщение..." autocomplete="off">
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">📤</button>
+                        <button class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600">📤</button>
                     </form>
                 </div>
 
@@ -339,130 +354,6 @@
     </form>
 </div>
 
-<script>
-    function switchTab(tabId, event) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-        document.getElementById('tab-' + tabId).classList.remove('hidden');
-        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('bg-gray-200'));
-
-        if (event) event.target.classList.add('bg-gray-200');
-
-        localStorage.setItem('adminTab', tabId);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const created = urlParams.get('created') === 'true';
-
-        const tabToShow = created ? 'users' : (localStorage.getItem('adminTab') || 'stats');
-        switchTab(tabToShow);
-
-        if (created) {
-            setTimeout(() => {
-                const msg = document.getElementById('successMessage');
-                if (msg) msg.style.display = 'none';
-
-                urlParams.delete('created');
-                const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
-                window.history.replaceState({}, document.title, newUrl);
-            }, 5000);
-        }
-    });
-
-    function openUserModal() {
-        document.getElementById('userModal').classList.remove('hidden');
-        document.getElementById('userModal').classList.add('flex');
-    }
-
-    function closeUserModal() {
-        document.getElementById('userModal').classList.remove('flex');
-        document.getElementById('userModal').classList.add('hidden');
-    }
-
-    const filterForm = document.querySelector('form[action="/admin"]');
-    const inputs = filterForm.querySelectorAll('select, input');
-
-    inputs.forEach(input => {
-        input.addEventListener('change', () => {
-            filterForm.submit();
-        });
-    });
-
-    const chatMessages = document.getElementById('chat-messages');
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-    function openEditModal(messageId, messageText) {
-        const form = document.getElementById('edit-form');
-        form.action = `/admin/chat/edit/${messageId}`;
-        form.text.value = messageText;
-        document.getElementById('edit-modal').classList.remove('hidden');
-    }
-
-    function closeEditModal() {
-        document.getElementById('edit-modal').classList.add('hidden');
-    }
-
-    function toggleEditForm(button) {
-        const container = button.closest('.task-text-area');
-        const textEl = container.querySelector('.task-text');
-        const formEl = container.querySelector('.task-edit-form');
-        const editBtn = container.querySelector('.edit-btn');
-        const input = formEl.querySelector('input[name="text"]');
-
-        const isEditing = !formEl.classList.contains('hidden');
-
-        if (isEditing) {
-            formEl.classList.add('hidden');
-            textEl.classList.remove('hidden');
-            editBtn.classList.remove('hidden');
-        } else {
-            formEl.classList.remove('hidden');
-            textEl.classList.add('hidden');
-            editBtn.classList.add('hidden');
-            input.focus();
-
-            input.addEventListener('keydown', function escHandler(e) {
-                if (e.key === 'Escape') {
-                    formEl.classList.add('hidden');
-                    textEl.classList.remove('hidden');
-                    editBtn.classList.remove('hidden');
-                    input.removeEventListener('keydown', escHandler);
-                }
-            });
-        }
-    }
-
-    function validateEditForm(form) {
-        const input = form.querySelector('input[name="text"]');
-        const value = input.value.trim();
-
-        if (value === '') {
-            alert('Текст задачи не может быть пустым.');
-            input.focus();
-            return false;
-        }
-
-        return true;
-    }
-
-    function toggleDropdown(button) {
-        const dropdown = button.nextElementSibling;
-        dropdown.classList.toggle('hidden');
-
-        document.addEventListener('click', function handler(e) {
-            if (!button.parentNode.contains(e.target)) {
-                dropdown.classList.add('hidden');
-                document.removeEventListener('click', handler);
-            }
-        });
-    }
-
-    function toggleTasks(adminId) {
-        const el = document.getElementById(`tasks-for-${adminId}`);
-        if (el) {
-            el.classList.toggle('hidden');
-        }
-    }
-</script>
+<script src="/adminHandling.js"></script>
 </body>
 </html>
