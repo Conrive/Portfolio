@@ -9,21 +9,6 @@ const { ensureAuth } = require('../models/ensureAuth');
 const { promisify } = require('util');
 const dbGet = promisify(db.get.bind(db));
 
-router.get('/', ensureAuth, async (req, res) => {
-    const user = req.session.user;
-    const projects = await getUserProjects(user.id);
-    const token = req.csrfToken();
-    res.render('profile', {
-        user,
-        profileUser: user,
-        projects,
-        isOwner: true,
-        comments: [],
-        currentUser: user,
-        csrfToken: token
-    });
-});
-
 //Форма профиля
 router.get('/:id', async (req, res) => {
     const viewer = req.session.user;
@@ -100,49 +85,60 @@ router.post('/:id/edit', ensureAuth,
         cover = `/uploads/${req.files['cover'][0].filename}`;
     }
 
-    const emailChanged = email !== req.session.user.email;
-
-    const query = `
-        UPDATE users 
-        SET name = ?, bio = ?, github = ?, telegram = ?, linkedin = ?, avatar = ?, cover = ?, email = ?, email_verified = ?
-        WHERE id = ?`;
-    const params = [
-        name,
-        bio,
-        github,
-        telegram,
-        linkedin,
-        avatar,
-        cover,
-        email,
-        emailChanged ? 0 : req.session.user.email_verified, // сбрасываем подтверждение если изменилась почта
-        req.session.user.id
-    ];
-
-    db.run(query, params, (err) => {
-        if (err) {
-            console.error('Ошибка при обновлении профиля:', err.message);
+    db.get(`SELECT email, email_verified FROM users WHERE id = ?`, [req.session.user.id], (err, row) => {
+        if (err || !row) {
+            console.error('Ошибка при чтении email из БД:', err?.message);
             return res.render('editProfile', {
                 user: req.body,
                 error: 'Ошибка при обновлении профиля',
             });
         }
 
-        req.session.user.name = name;
-        req.session.user.bio = bio;
-        req.session.user.github = github;
-        req.session.user.telegram = telegram;
-        req.session.user.linkedin = linkedin;
-        req.session.user.avatar = avatar;
-        req.session.user.cover = cover;
-        req.session.user.email = email;
-        if (emailChanged) {
-            req.session.user.email_verified = 0;
-        }
+        const emailChanged = email !== row.email;
 
-        return emailChanged
-            ? res.redirect('/login')
-            : res.redirect(`/profile/${req.session.user.id}`);
+        const query =
+            `UPDATE users
+        SET name = ?, bio = ?, github = ?, telegram = ?, linkedin = ?, avatar = ?, cover = ?, email = ?, email_verified = ?
+            WHERE id = ?`;
+        const params = [
+            name,
+            bio,
+            github,
+            telegram,
+            linkedin,
+            avatar,
+            cover,
+            email,
+            emailChanged ? 0 : row.email_verified,
+            req.session.user.id
+        ];
+
+        db.run(query, params, (err) => {
+            if (err) {
+                console.error('Ошибка при обновлении профиля:', err.message);
+                return res.render('editProfile', {
+                    user: req.body,
+                    error: 'Ошибка при обновлении профиля',
+                });
+            }
+
+            req.session.user = {
+                ...req.session.user,
+                name,
+                bio,
+                github,
+                telegram,
+                linkedin,
+                avatar,
+                cover,
+                email,
+                email_verified: emailChanged ? 0 : row.email_verified
+            };
+
+            return emailChanged
+                ? res.redirect('/login')
+                : res.redirect(`/profile/${req.session.user.id}`);
+        });
     });
 });
 

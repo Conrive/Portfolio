@@ -118,9 +118,7 @@
         <div class="mt-6">
             <h2 class="text-xl font-semibold">Мои проекты</h2>
 
-            <% if (isOwner || projects.length > 10) { %>
-                <a href="/profile/<%= profileUser.id %>/projects" class="text-gray-500 hover:text-gray-700 hover:underline">Посмотреть все проекты...</a>
-            <% } %>
+            <a href="/profile/<%= profileUser.id %>/projects" class="text-gray-500 hover:text-gray-700 hover:underline">Посмотреть все проекты...</a>
 
             <div class="flex justify-between mt-6">
                 <% if (isOwner) { %>
@@ -149,38 +147,38 @@
             </div>
 
         <% if (projects.length > 0) { %>
-                <div class="grid grid-cols-2 gap-4 mt-4">
-                    <% projects.forEach(project => { %>
-                        <div class="project-card" data-id="<%= project.id %>">
-                            <div class="p-4 border rounded shadow"
-                                 style='background-image: url("<%= project.cover %>"); background-size: cover; background-position: center;'>
-                                <div class="inset-0 bg-white/85 p-4 flex flex-col justify-between">
-                                    <h3 class="text-lg font-semibold"><%= project.title %></h3>
-                                    <p class="text-gray-600"><%= project.description %></p>
-                                    <div class="flex items-center justify-between mt-4">
-                                        <a href="<%= project.link %>" class="text-blue-500" target="_blank">Cсылка</a>
-                                        <a href="<%= isOwner ? `/project/${project.id}/edit-page` : `/project/${project.id}/view` %>"
-                                           class="project-link text-sm text-blue-600 cursor-pointer ml-4 hover:underline"
-                                        >
-                                            Макет
-                                        </a>
-                                    </div>
-                                    <!-- Кнопки -->
-                                    <% if (isOwner) { %>
-                                        <div class="mt-2 flex space-x-2">
-                                            <a href="/projects/edit/<%= project.id %>" class="bg-yellow-500 text-white px-3 py-1 rounded">Редактировать</a>
-
-                                            <form action="/projects/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?');">
-                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                                <button class="bg-red-500 text-white px-3 py-1 rounded">Удалить</button>
-                                            </form>
-                                        </div>
-                                    <% } %>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <% projects.forEach(project => { %>
+                    <div class="project-card" data-id="<%= project.id %>">
+                        <div class="p-4 border rounded shadow <% if (project.is_favorite) { %> border-2 border-yellow-400 <% }%>"
+                             style='background-image: url("<%= project.cover %>"); background-size: cover; background-position: center;'>
+                            <div class="inset-0 bg-white/85 p-4 flex flex-col justify-between">
+                                <h3 class="text-lg font-semibold"><%= project.title %></h3>
+                                <p class="text-gray-600"><%= project.description %></p>
+                                <div class="flex items-center justify-between mt-4">
+                                    <a href="<%= project.link %>" class="text-blue-500" target="_blank">Cсылка</a>
+                                    <a href="<%= isOwner ? `/project/${project.id}/edit-page` : `/project/${project.id}/view` %>"
+                                       class="project-link text-sm text-blue-600 cursor-pointer ml-4 hover:underline"
+                                    >
+                                        Макет
+                                    </a>
                                 </div>
+                                <!-- Кнопки -->
+                                <% if (isOwner) { %>
+                                    <div class="mt-2 flex space-x-2">
+                                        <a href="/projects/edit/<%= project.id %>" class="bg-yellow-500 text-white px-3 py-1 rounded">Редактировать</a>
+
+                                        <form action="/projects/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?');">
+                                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                            <button class="bg-red-500 text-white px-3 py-1 rounded">Удалить</button>
+                                        </form>
+                                    </div>
+                                <% } %>
                             </div>
                         </div>
-                    <% }) %>
-                </div>
+                    </div>
+                <% }) %>
+            </div>
             <% } else { %>
                 <p class="text-gray-500 mt-2">Проектов пока нет.</p>
             <% } %>

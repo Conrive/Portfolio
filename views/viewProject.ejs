@@ -52,10 +52,8 @@
     window.selectElement = () => {};
     window.updateObjectTree = () => {};
 
-    // Загружаем канвас
     window.addEventListener('DOMContentLoaded', () => {
         loadCanvas().then(() => {
-            // После загрузки — отключаем редактируемость
             const allElements = document.querySelectorAll('#canvas [contenteditable]');
             allElements.forEach(el => el.contentEditable = false);
         });
