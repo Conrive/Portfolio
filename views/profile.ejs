@@ -46,6 +46,32 @@
                         </div>
                     </div>
                 <% } %>
+
+                <% if (isOwner && profileUser.hidden) { %>
+                    <div class="relative group ml-2">
+                        <span class="text-yellow-500 text-xl cursor-pointer">🙈</span>
+                        <div class="absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            Профиль скрыт от других пользователей
+                        </div>
+                    </div>
+                <% } %>
+
+                <% if (currentUser?.role === 2 && !isOwner) { %>
+                    <% if (profileUser.hidden) { %>
+                        <div class="relative group ml-2">
+                            <span class="text-yellow-500 text-xl cursor-pointer">🙈</span>
+                            <div class="absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                Профиль скрыт от других пользователей
+                            </div>
+                        </div>
+                    <% } %>
+                    <form action="/profile/<%= profileUser.id %>/toggle-visibility" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="ml-2 px-2 py-1 text-sm border rounded bg-gray-100 hover:bg-gray-200 transition">
+                            <%= profileUser.hidden ? 'Сделать видимым' : 'Скрыть профиль' %>
+                        </button>
+                    </form>
+                <% } %>
             </div>
         </div>
     </div>

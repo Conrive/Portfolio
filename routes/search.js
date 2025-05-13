@@ -19,8 +19,11 @@ router.get('/search', async (req, res) => {
         let projects = [];
 
         if (!filter || filter === 'users' || filter === 'all') {
+            const userIsAdmin = req.session?.user?.role === 2;
+            const hiddenFilter = userIsAdmin ? '' : 'AND hidden = 0';
+
             users = await dbAll(
-                `SELECT * FROM users WHERE name LIKE ? COLLATE NOCASE OR bio LIKE ? COLLATE NOCASE LIMIT 7`,
+                `SELECT * FROM users WHERE (name LIKE ? COLLATE NOCASE OR bio LIKE ? COLLATE NOCASE) ${hiddenFilter} LIMIT 7`,
                 [`%${q}%`, `%${q}%`]
             );
         }
@@ -55,8 +58,11 @@ router.get('/api/search', async (req, res) => {
         let projects = [];
 
         if (!filter || filter === 'users' || filter === 'all') {
+            const userIsAdmin = req.session?.user?.role === 2;
+            const hiddenFilter = userIsAdmin ? '' : 'AND hidden = 0';
+
             users = await dbAll(
-                `SELECT * FROM users WHERE name LIKE ? COLLATE NOCASE OR bio LIKE ? COLLATE NOCASE LIMIT 7`,
+                `SELECT * FROM users WHERE (name LIKE ? COLLATE NOCASE OR bio LIKE ? COLLATE NOCASE) ${hiddenFilter} LIMIT 7`,
                 [`%${q}%`, `%${q}%`]
             );
         }

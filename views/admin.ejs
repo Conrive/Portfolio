@@ -76,6 +76,12 @@
                                 <option value="3" <%= user.role === 3 ? 'selected' : '' %>>Teacher</option>
                                 <option value="2" <%= user.role === 2 ? 'selected' : '' %>>Admin</option>
                             </select>
+
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="hidden" value="1" class="w-6 h-6 bg-gray-700 rounded-md peer-checked:bg-blue-600 peer-checked:border-blue-600 border-2 border-gray-500" <%= user.hidden ? 'checked' : '' %> />
+                                Скрыт
+                            </label>
+
                             <button class="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 cursor-pointer">💾</button>
                         </form>
                         <form action="/admin/user/delete/<%= user.id %>" method="POST" onsubmit="return confirm('Удалить пользователя?')">
@@ -154,7 +160,7 @@
         <div id="tab-team" class="tab-content hidden flex flex-row gap-3">
             <div id="admin-panel" class="flex flex-col w-2/4 gap-3">
                 <div id="admin-chat" class="bg-white rounded-lg p-6 shadow-lg flex flex-col h-[500px] overflow-hidden">
-                    <h2 class="text-xl font-semibold mb-4">💬 Админский чат</h2>
+                    <h2 class="text-xl font-semibold mb-4">Админский чат</h2>
                     <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 pr-2">
                         <% messages.forEach(message => { %>
                             <div class="flex <%= message.user_id === currentUser.id ? 'justify-end' : 'justify-start' %>">

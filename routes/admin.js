@@ -105,13 +105,14 @@ async function logAction(userId, action) {
 
 // Обновление информации пользователя
 router.post('/user/update/:id', checkAdmin, async (req, res) => {
-    const { name, bio, role } = req.body;
+    const { name, bio, role, hidden } = req.body;
     const userId = req.params.id;
     const oldUser = await dbGet('SELECT * FROM users WHERE id = ?', [userId]);
+    const isHidden = hidden === '1' ? 1 : 0;
 
-    await dbRun('UPDATE users SET name = ?, bio = ?, role = ? WHERE id = ?', [name, bio, role, userId]);
+    await dbRun('UPDATE users SET name = ?, bio = ?, role = ?, hidden = ? WHERE id = ?', [name, bio, role, isHidden, userId]);
 
-    await logAction(req.session.user.id, `Updated user: ${oldUser.name} (ID: ${userId}) → name: ${oldUser.name} → ${name}, role: ${oldUser.role} → ${role}`);
+    await logAction(req.session.user.id, `Updated user: ${oldUser.name} (ID: ${userId}) → name: ${oldUser.name} → ${name}, role: ${oldUser.role} → ${role}, hidden: ${oldUser.hidden} → ${isHidden}`);
     res.redirect('/admin');
 });
 

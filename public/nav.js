@@ -7,29 +7,42 @@ const projectList = document.querySelector('#searchProjects ul');
 const filterButtons = document.querySelectorAll('.filter-btn');
 
 let currentFilter = 'all';
+let clickedAvatarRecently = false;
 
 function toggleUserMenu() {
     const dropdown = document.getElementById('userDropdown');
     dropdown.classList.toggle('hidden');
 }
 
-// Закрытие меню при клике вне его
 document.addEventListener('click', (e) => {
     const dropdown = document.getElementById('userDropdown');
-    const avatar = document.querySelector('img[alt="avatar"]');
-    if (dropdown && !dropdown.contains(e.target) && e.target !== avatar) {
-        dropdown.classList.add('hidden');
+    const searchResults = document.getElementById('searchResults');
+    const searchInput = document.getElementById('searchInput');
+
+    const clickedInsideUserMenu = dropdown?.contains(e.target);
+    const clickedInsideSearch = searchResults.contains(e.target) || e.target === searchInput;
+
+    // Скрываем user menu только если клик не по меню и не был только что по аватару
+    if (!clickedInsideUserMenu && !clickedAvatarRecently) {
+        dropdown?.classList.add('hidden');
     }
+
+    // Скрываем поиск, если клик вне него и вне user menu
+    if (!clickedInsideSearch && !clickedInsideUserMenu) {
+        searchResults.classList.add('hidden');
+    }
+
+    // Сбросим флаг
+    clickedAvatarRecently = false;
+});
+
+document.querySelector('img[alt="avatar"]')?.addEventListener('mousedown', (e) => {
+    clickedAvatarRecently = true; // помечаем, что был клик по аватару
+    toggleUserMenu();
 });
 
 searchInput.addEventListener('focus', () => {
     searchResults.classList.remove('hidden');
-});
-
-document.addEventListener('click', (e) => {
-    if (!searchResults.contains(e.target) && e.target !== searchInput) {
-        searchResults.classList.add('hidden');
-    }
 });
 
 filterButtons.forEach(button => {

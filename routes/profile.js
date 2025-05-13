@@ -6,7 +6,8 @@ const { getUserProjects } = require('../models/projectModel');
 const db = require('../models/db');
 const { deleteFileIfExists, upload, storage} = require('../public/fileHandling');
 const { ensureAuth } = require('../models/ensureAuth');
-
+const { promisify } = require('util');
+const dbGet = promisify(db.get.bind(db));
 
 router.get('/', ensureAuth, async (req, res) => {
     const user = req.session.user;
@@ -29,6 +30,17 @@ router.get('/:id', async (req, res) => {
     const profileId = parseInt(req.params.id);
 
     if (isNaN(profileId)) return res.redirect('/');
+
+    const profileUser = await dbGet('SELECT * FROM users WHERE id = ?', [req.params.id]);
+
+    if (!profileUser) return res.status(404).send('User not found');
+
+    const isOwner = req.session.user && req.session.user.id === profileUser.id;
+    const isAdmin = req.session.user && req.session.user.role === 2;
+
+    if (profileUser.hidden && !isOwner && !isAdmin) {
+        return res.status(403).send('Этот профиль скрыт');
+    }
 
     db.get('SELECT * FROM users WHERE id = ?', [profileId], async (err, user) => {
         if (err || !user) {
@@ -131,6 +143,27 @@ router.post('/:id/edit', ensureAuth,
         return emailChanged
             ? res.redirect('/login')
             : res.redirect(`/profile/${req.session.user.id}`);
+    });
+});
+
+// Переключение видимости профиля админом прямо из профиля
+router.post('/:id/toggle-visibility', ensureAuth, async (req, res) => {
+    const currentUser = req.session.user;
+    const profileId = parseInt(req.params.id);
+
+    if (isNaN(profileId)) return res.redirect('/');
+    if (currentUser.role !== 2) return res.status(403).send('Недостаточно прав');
+
+    const userToToggle = await dbGet('SELECT hidden FROM users WHERE id = ?', [profileId]);
+    if (!userToToggle) return res.status(404).send('Пользователь не найден');
+
+    const newHiddenStatus = userToToggle.hidden ? 0 : 1;
+    db.run('UPDATE users SET hidden = ? WHERE id = ?', [newHiddenStatus, profileId], (err) => {
+        if (err) {
+            console.error('Ошибка при изменении скрытости:', err.message);
+            return res.status(500).send('Ошибка при обновлении');
+        }
+        res.redirect(`/profile/${profileId}`);
     });
 });
 

@@ -50,12 +50,10 @@
                 </div>
             </div>
 
-
             <% if (user) { %>
                 <div class="relative">
                     <img src="<%= user.avatar || '/uploads/default-avatar-hq.png' %>" alt="avatar"
-                         class="w-8 h-8 rounded-full cursor-pointer border-2 border-gray-300 "
-                         onclick="toggleUserMenu()" />
+                         class="w-8 h-8 rounded-full cursor-pointer border-2 border-gray-300 " />
 
                     <div id="userDropdown" class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-md hidden z-50">
                         <a href="/profile/<%= user.id %>" class="block px-4 py-2 hover:bg-gray-100 text-sm">Профиль</a>
