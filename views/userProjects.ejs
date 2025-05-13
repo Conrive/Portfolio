@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <title>Профиль</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100"> <%- include('partials/nav') %>
+<div class="container mx-auto p-4">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-red-800">Проекты пользователя</h1>
+
+        <div>
+            <label for="viewMode">Вид:</label>
+            <select id="viewMode" onchange="renderProjects(currentProjects)">
+                <option value="grid">Сетка</option>
+                <option value="list">Список</option>
+            </select>
+        </div>
+    </div>
+    <div class="mt-4 space-x-2">
+        <button onclick="loadProjects('favorite')" class="filter-btn">Избранные</button>
+        <button onclick="loadProjects('popular')" class="filter-btn">Популярные</button>
+        <button onclick="loadProjects('new')" class="filter-btn">Новые</button>
+    </div>
+
+    <div id="projectsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    });
+
+    let currentProjects = [];
+    const profileId = <%= profileId %>;
+
+    function loadProjects(sort) {
+        fetch(`/api/user-projects?user_id=${profileId}&sort=${sort}`)
+            .then(res => res.json())
+            .then(projects => {
+                currentProjects = projects;
+                renderProjects(projects);
+            });
+    }
+
+    function renderProjects(projects) {
+        const container = document.getElementById('projectsContainer');
+        const viewMode = document.getElementById('viewMode').value;
+        const isOwner = <%= isOwner ? 'true' : 'false' %>;
+        container.className = viewMode === 'list'
+            ? 'flex flex-col space-y-4 mt-6'
+            : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6';
+
+        container.innerHTML = '';
+
+        if (!projects || projects.length === 0) {
+            if (isOwner) {
+                container.innerHTML = `
+                <div class="col-span-full text-center text-gray-500 text-lg mt-10">
+                    У вас пока нет проектов. Нажмите <a href="/projects/add" class="text-blue-600 underline">сюда</a>, чтобы создать первый.
+                </div>
+            `;
+                return;
+            } else {
+                container.innerHTML = `
+                <div class="col-span-full text-center text-gray-500 text-lg mt-10">
+                    У этого пользователя пока нет проектов.
+                </div>
+            `;
+            }
+        }
+
+        projects.forEach(project => {
+            const div = document.createElement('div');
+            div.className = 'relative bg-white rounded-lg shadow p-4 hover:shadow-lg transition-all project-card cursor-pointer';
+            div.dataset.id = project.id;
+            div.style.backgroundImage = project.cover ? `url("${project.cover}")` : '';
+            div.style.backgroundSize = 'cover';
+            div.style.backgroundPosition = 'center';
+
+            div.innerHTML = `
+                <div class="inset-0 bg-white/85 p-8 flex flex-col justify-between">
+                <h2 class="text-xl font-semibold mb-2">${project.title}</h2>
+                <p class="text-sm text-gray-600">${project.description || 'Без описания'}</p>
+                </div>
+            `;
+
+            if (isOwner) {
+                const favBtn = document.createElement('button');
+                favBtn.className = 'absolute top-2 right-2 bg-white/80 rounded-full p-1 hover:scale-105 transition';
+                favBtn.innerHTML = `<img src="${project.is_favorite ? '/uploads/star-full.png' : '/uploads/star-border.png'}" width="24" height="24">`;
+                favBtn.onclick = (e) => {
+                    e.stopPropagation();
+
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                    fetch(`/project/favorite/${project.id}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'CSRF-Token': csrfToken
+                        }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                favBtn.querySelector('img').src = data.newStatus === 1
+                                    ? '/uploads/star-full.png'
+                                    : '/uploads/star-border.png';
+                            } else {
+                                alert(data.error || 'Не удалось обновить избранное');
+                            }
+                        });
+                };
+
+                div.appendChild(favBtn);
+            }
+
+            div.addEventListener('dblclick', () => {
+                window.location.href = '/project/' + project.id + '/view';
+            });
+
+            container.appendChild(div);
+        });
+    }
+
+    loadProjects('favorite');
+</script>
+</body>
+</html>

@@ -10,10 +10,80 @@ const { ensureAuth } = require('../models/ensureAuth');
 const dbGet = promisify(db.get.bind(db));
 const dbRun = promisify(db.run.bind(db));
 
+//Страница всех проектов
+router.get('/profile/:id/projects', ensureAuth, (req, res) => {
+    const sort = req.query.sort || 'favorite';
+    const token = req.csrfToken();
+    let orderBy = 'created_at DESC';
+    if (sort === 'popular') orderBy = 'popularity DESC';
+    if (sort === 'favorite') orderBy = 'is_favorite DESC, created_at DESC';
+    const profileId = parseInt(req.params.id);
+    const viewer = req.session.user.id || null;
+    const isOwner = viewer && parseInt(viewer) === profileId;
+
+    db.all(`SELECT * FROM projects WHERE user_id = ? ORDER BY ${orderBy}`, [profileId], (err, projects) => {
+        if (err) return res.status(500).send('Ошибка загрузки проектов' + err);
+
+        res.render('userProjects', {
+            title: 'Мои проекты',
+            csrfToken: token,
+            projects,
+            sort,
+            isOwner,
+            profileId
+        });
+    });
+});
+
+//Получаем проекты с фильтрацией
+router.get('/api/user-projects', (req, res) => {
+    const userId = parseInt(req.query.user_id); // <-- получаем нужного пользователя
+    const sort = req.query.sort || 'favorite';
+
+    let orderBy = 'created_at DESC';
+    if (sort === 'popular') orderBy = 'popularity DESC';
+    if (sort === 'favorite') orderBy = 'is_favorite DESC, created_at DESC';
+
+    db.all(`SELECT * FROM projects WHERE user_id = ? ORDER BY ${orderBy}`, [userId], (err, projects) => {
+        if (err) return res.status(500).json({ error: 'Ошибка загрузки проектов' });
+        res.json(projects);
+    });
+});
+
+//Добавление проекта в "Избранное"
+router.post('/project/favorite/:id', ensureAuth, (req, res) => {
+    const projectId = req.params.id;
+    const userId = req.session.user.id;
+
+    db.get('SELECT * FROM projects WHERE id = ? AND user_id = ?', [projectId, userId], (err, project) => {
+        if (err || !project) {
+            return res.status(403).json({ error: 'Нет доступа к проекту' });
+        }
+
+        db.get('SELECT COUNT(*) as count FROM projects WHERE user_id = ? AND is_favorite = 1', [userId], (err, row) => {
+            const isCurrentlyFavorite = project.is_favorite === 1;
+
+            if (!isCurrentlyFavorite && row.count >= 10) {
+                return res.status(400).json({ error: 'Максимум 10 избранных проектов' });
+            }
+
+            const newStatus = isCurrentlyFavorite ? 0 : 1;
+
+            db.run('UPDATE projects SET is_favorite = ? WHERE id = ?', [newStatus, projectId], function (err) {
+                if (err) {
+                    return res.status(500).json({ error: 'Ошибка обновления избранного' });
+                }
+
+                res.json({ success: true, newStatus });
+            });
+        });
+    });
+});
+
 //Показ формы добавления проекта
 router.get('/add', ensureAuth, (req, res) => {
-    const csrfToken = req.csrfToken();
-    res.render('addProject', {csrfToken});
+    const token = req.csrfToken();
+    res.render('addProject', {csrfToken: token});
 });
 
 //Обработка формы добавления проекта
@@ -126,10 +196,7 @@ router.post('/delete/:id', ensureAuth, (req, res) => {
                         }
                     }
                 });
-            } else {
-                console.log('layout.elements отсутствует или не массив');
             }
-
         } catch (e) {
             console.error(`Ошибка при парсинге layout проекта ${projectId}:`, e.message);
         }
