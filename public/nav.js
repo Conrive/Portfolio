@@ -22,22 +22,19 @@ document.addEventListener('click', (e) => {
     const clickedInsideUserMenu = dropdown?.contains(e.target);
     const clickedInsideSearch = searchResults.contains(e.target) || e.target === searchInput;
 
-    // Скрываем user menu только если клик не по меню и не был только что по аватару
     if (!clickedInsideUserMenu && !clickedAvatarRecently) {
         dropdown?.classList.add('hidden');
     }
 
-    // Скрываем поиск, если клик вне него и вне user menu
     if (!clickedInsideSearch && !clickedInsideUserMenu) {
         searchResults.classList.add('hidden');
     }
 
-    // Сбросим флаг
     clickedAvatarRecently = false;
 });
 
 document.querySelector('img[alt="avatar"]')?.addEventListener('mousedown', (e) => {
-    clickedAvatarRecently = true; // помечаем, что был клик по аватару
+    clickedAvatarRecently = true;
     toggleUserMenu();
 });
 

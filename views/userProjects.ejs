@@ -31,6 +31,7 @@
     </div>
 </div>
 
+<script src="/handleMobileDoubleTap.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -125,6 +126,9 @@
                 window.location.href = '/project/' + project.id + '/view';
             });
 
+            div.addEventListener('touchend', handleMobileDoubleTap(() => {
+                window.location.href = '/project/' + project.id + '/view';
+            }));
             container.appendChild(div);
         });
     }

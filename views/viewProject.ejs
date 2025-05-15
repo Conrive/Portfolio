@@ -15,20 +15,31 @@
         }
         #canvas {
             position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
+            min-width: 800px; /* по ширине проекта */
+            min-height: 600px; /* по высоте проекта */
+            background-color: white; /* если нужно дефолтное значение */
+            background-size: cover;
+            background-repeat: no-repeat;
         }
     </style>
 </head>
 <body>  <%- include('partials/nav') %>
 
-<main class="w-full flex h-fit mt-20">
-    <aside class="w-1/5 p-4 space-y-2 flex flex-col items-start">
+<main class="w-full flex flex-col h-fit mt-2">
+    <div class="flex w-full items-center justify-center">
+        <% if (project.layout) { %>
+        <div class="w-full h-fit flex overflow-auto">
+            <div id="canvas" class=""></div>
+        </div>
+
+        <% } else { %>
+            <div>Упс... Похоже, что у этого проекта пока отсутствует страница. Попробуйте зайти позже.</div>
+        <% } %>
+    </div>
+    <div class="p-4 space-y-2 flex flex-col sm:flex-row items-start justify-between">
         <% if (project.layout) { %>
             <button class="bg-red-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-red-600" onclick="exportCanvasToPDF()">Экспортировать в PDF</button>
         <% } %>
-        <span class="text-sm text-gray-600 mt-1 block">Оценок: <%= project.popularity || 0 %></span>
         <% if (user) { %>
             <button id="likeBtn" class="bg-green-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-green-600">❤️ Понравилось</button>
         <% } %>
@@ -37,15 +48,8 @@
         <% } else { %>
             <button class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600"><a href="/">Вернуться на главную</a></button>
         <% } %>
-    </aside>
-
-    <div class="flex w-4/5 items-center justify-center">
-        <% if (project.layout) { %>
-            <div id="canvas"></div>
-        <% } else { %>
-            <div>Упс... Похоже, что у этого проекта пока отсутствует страница. Попробуйте зайти позже.</div>
-        <% } %>
     </div>
+    <span class="text-sm text-gray-600 mt-1 block">Оценок: <%= project.popularity || 0 %></span>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>

@@ -82,7 +82,7 @@ async function exportCanvasToPDF() {
                     type: 'line',
                     x1: left,
                     y1: top,
-                    x2: left + width + '10000',
+                    x2: left + width,
                     y2: top,
                     lineWidth: 1,
                     color: '#000000'

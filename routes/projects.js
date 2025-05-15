@@ -266,9 +266,15 @@ router.get('/project/:id/edit-page', (req, res) => {
         const token = req.csrfToken();
         res.render('editProjectPage', {
             project,
-            layout: project.layout ? JSON.parse(project.layout) : [], // если проект из БД, и у него есть layout
+            layout: project.layout ? JSON.parse(project.layout) : [],
         csrfToken: token
         });
+    });
+});
+
+router.get('/unsupported-screen', (req, res) => {
+    res.status(400).render('unsupportedScreen', {
+        message: "Ваш текущий размер экрана пока не поддерживается"
     });
 });
 

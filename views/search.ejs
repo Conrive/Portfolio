@@ -17,13 +17,15 @@
         <h2 class="text-xl font-semibold mt-6 mb-4">Пользователи</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             <% users.forEach(user => { %>
-                <div class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-all user-card" data-id="<%= user.id %>">
+                <div class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-all user-card" data-id="<%= user.id %>" style='background-image: url("<%= user.cover %>"); background-size: cover; background-position: center;'>
                     <div class="h-40 flex items-center justify-center mb-4">
                         <img src="<%= user.avatar || '/uploads/default-avatar-hq.png' %>" alt="avatar"
-                             class="w-24 h-24 rounded-full cursor-pointer"/>
+                             class="w-24 h-24 rounded-full cursor-pointer border-2 border-white shadow"/>
                     </div>
-                    <h2 class="text-lg font-semibold mb-1"><%= user.name %></h2>
-                    <p class="text-sm text-gray-600 overflow-hidden whitespace-nowrap text-ellipsis"><%= user.bio || 'Без описания' %></p>
+                    <div class="flex flex-col bg-white/85 p-2 rounded-lg">
+                        <h2 class="text-lg font-semibold mb-1"><%= user.name %></h2>
+                        <p class="text-sm text-gray-600 overflow-hidden whitespace-nowrap text-ellipsis"><%= user.bio || 'Без описания' %></p>
+                    </div>
                 </div>
             <% }) %>
         </div>

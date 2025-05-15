@@ -29,7 +29,7 @@ function addElement(type) {
 
         case 'divider':
             newEl = document.createElement('hr');
-            newEl.style.width = '100%';
+            newEl.style.width = canvas.width + 'px';
             break;
 
         case 'link':
@@ -48,7 +48,7 @@ function addElement(type) {
             newEl.style.width = '100px';
             newEl.style.height = '100px';
             newEl.style.backgroundColor = '#3498db';
-            newEl.style.clipPath = getPolygonClipPath(5); // стандарт 5 сторон
+            newEl.style.clipPath = getPolygonClipPath(5);
             newEl.dataset.sides = 5;
             newEl.style.cursor = 'pointer';
             break;
@@ -211,6 +211,12 @@ function selectElement(el) {
             <label class="block text-sm mb-1 mt-3">Закругление</label>
             <input type="number" value="${parseInt(el.style.borderRadius) || '0px'}" 
                    oninput="selectedElement.style.borderRadius = this.value + 'px'" class="w-full bg-gray-200 pl-3 rounded-2xl">
+        `;
+    } else if (el.tagName === 'HR') {
+        propsPanel.innerHTML = `
+            <label class="block text-sm mb-1 mt-3">Ширина</label>
+            <input type="number" value="${parseInt(el.style.width)}" 
+                   oninput="selectedElement.style.width = this.value + 'px'" class="w-full bg-gray-200 pl-3 rounded-2xl">
         `;
     } else if (el.tagName === 'POL') {
         propsPanel.innerHTML = `
@@ -572,6 +578,7 @@ function collectCanvasData() {
         backgroundImage: canvasStyles.backgroundImage,
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
+        backgroundPosition: 'center',
         width: canvas.offsetWidth,
         height: canvas.offsetHeight,
         elements
@@ -628,10 +635,11 @@ async function loadCanvas() {
 
                 canvas.style.backgroundColor = parsedLayout.backgroundColor || 'white';
                 canvas.style.backgroundImage = parsedLayout.backgroundImage || 'none';
-                canvas.style.width = (parsedLayout.width || 800) + 'px';
-                canvas.style.height = (parsedLayout.height || 600) + 'px';
+                canvas.style.minWidth = (parsedLayout.width || 800) + 'px';
+                canvas.style.minHeight = (parsedLayout.height || 600) + 'px';
                 canvas.style.backgroundSize = parsedLayout.backgroundSize || 'cover';
                 canvas.style.backgroundRepeat = parsedLayout.backgroundRepeat || 'no-repeat';
+                canvas.style.backgroundPosition = parsedLayout.backgroundPosition || 'center';
 
                 objects.forEach(el => {
                     let element;
@@ -664,7 +672,7 @@ async function loadCanvas() {
                             element.style.position = 'absolute';
                             element.style.left = el.styles.left || '0px';
                             element.style.top = el.styles.top || '0px';
-                            element.style.width = el.styles.width || '100%';
+                            element.style.width = el.styles.width || '100px';
                             element.cursor = 'pointer';
                             element.dataset.uid = el.dataset.uid;
                             break;

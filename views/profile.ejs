@@ -98,7 +98,7 @@
     <div class="max-w-4xl mx-auto mt-32 p-4">
         <div class="mb-6" style="margin-top: -40px;">
             <% if (profileUser.bio) { %>
-                <p class="text-gray-600 text-sm mt-1 px-4 break-words"><%= profileUser.bio %></p>
+                <p class="text-gray-600 text-sm mt-1 px-4 text-justify break-words"><%= profileUser.bio %></p>
             <% } %>
         </div>
         <!-- Соцсети -->
@@ -120,7 +120,7 @@
 
             <a href="/profile/<%= profileUser.id %>/projects" class="text-gray-500 hover:text-gray-700 hover:underline">Посмотреть все проекты...</a>
 
-            <div class="flex justify-between mt-6">
+            <div class="flex flex-col sm:flex-row justify-between mt-6">
                 <% if (isOwner) { %>
                     <% if (user.email_verified) { %>
                         <a href="/projects/add" class="bg-green-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-green-600">Добавить проект</a>
@@ -131,15 +131,6 @@
                         </button>
                     <% } %>
                 <% } %>
-                <% if (!user.email_verified && isOwner) { %>
-                    <form action="/verify/send" method="POST" class="">
-                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <button type="submit"
-                                class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded flex w-max mt-2 cursor-pointer">
-                            Подтвердить Email
-                        </button>
-                    </form>
-                <% }%>
                 <!-- Кнопка редактирования -->
                 <% if (isOwner) { %>
                     <a href="/profile/<%= profileUser.id %>/edit" class="bg-blue-500 text-white px-4 py-2 rounded flex w-max mt-2 hover:bg-blue-600">Редактировать информацию</a>
@@ -147,7 +138,7 @@
             </div>
 
         <% if (projects.length > 0) { %>
-            <div class="grid grid-cols-2 gap-4 mt-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <% projects.forEach(project => { %>
                     <div class="project-card" data-id="<%= project.id %>">
                         <div class="p-4 border rounded shadow <% if (project.is_favorite) { %> border-2 border-yellow-400 <% }%>"
@@ -165,12 +156,12 @@
                                 </div>
                                 <!-- Кнопки -->
                                 <% if (isOwner) { %>
-                                    <div class="mt-2 flex space-x-2">
-                                        <a href="/projects/edit/<%= project.id %>" class="bg-yellow-500 text-white px-3 py-1 rounded">Редактировать</a>
+                                    <div class="mt-2 gap-3 flex flex-col sm:flex-row justify-between space-x-2">
+                                        <a href="/projects/edit/<%= project.id %>" class="w-full sm:w-fit bg-yellow-500 text-white text-center px-3 py-1 rounded">Редактировать</a>
 
                                         <form action="/projects/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?');">
                                             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                            <button class="bg-red-500 text-white px-3 py-1 rounded">Удалить</button>
+                                            <button class="w-full bg-red-500 text-white px-3 py-1 rounded">Удалить</button>
                                         </form>
                                     </div>
                                 <% } %>
@@ -269,12 +260,18 @@
     </div>
 </div>
 </body>
+<script src="/handleMobileDoubleTap.js"></script>
 <script>
     document.querySelectorAll('.project-card').forEach(card => {
+        const projectId = card.dataset.id;
+
         card.addEventListener('dblclick', () => {
-            const projectId = card.dataset.id;
             window.location.href = `/project/${projectId}/view`;
         });
+
+        card.addEventListener('touchend', handleMobileDoubleTap(() => {
+            window.location.href = `/project/${projectId}/view`;
+        }));
     });
 
     function parseMarkdown(text) {
