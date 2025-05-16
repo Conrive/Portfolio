@@ -11,8 +11,10 @@
 <%- include('partials/nav') %>
 
 <div class="bg-gray-100 min-h-screen flex">
-    <!-- Сайдбар -->
-    <aside class="w-64 bg-white border-r min-h-screen p-6 space-y-4 sticky top-0">
+    <button id="toggleSidebar" class=" hidden md:hidden p-4 absolute z-50 top-0 left-0 text-xl сursor-pointer">☰</button>
+
+    <!-- Контейнер сайдбара -->
+    <aside id="sidebar" class="fixed top-0 md:static transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out w-64 bg-white border-r min-h-screen p-6 space-y-4 z-40">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Админка</h2>
         <nav class="space-y-2">
             <button onclick="switchTab('stats', event)" class="tab-button w-full text-left px-4 py-2 rounded hover:bg-gray-200">📊 Статистика</button>
@@ -24,7 +26,7 @@
     </aside>
 
     <!-- Основной контент, панель -->
-    <main class="flex-1 p-6">
+    <main class="flex-1 p-4 md:p-6 pt-6 md:pt-6">
         <h1 class="text-3xl font-bold mb-8 text-gray-800">Панель администратора</h1>
 
         <!-- Раздел со статистикой и последними регистрациями -->
@@ -52,11 +54,11 @@
 
         <!-- Раздел с юзерами -->
         <div id="tab-users" class="tab-content hidden space-y-6">
-            <div class="flex gap-3 justify-start h-10">
+            <div class="flex flex-col sm:flex-row gap-2 justify-start h-10">
                 <input type="text" id="userSearchInput" placeholder="Поиск пользователей..."
                        class="border px-3 py-2 rounded w-64" />
 
-                <button onclick="openUserModal()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                <button onclick="openUserModal()" class="bg-green-500 text-white px-4 py-2 w-64 rounded hover:bg-green-600">
                     ➕ Создать пользователя
                 </button>
                 <% if (created) { %>
@@ -66,10 +68,10 @@
                 <% } %>
             </div>
 
-            <div id="userList" class="space-y-6">
+            <div id="userList" class="pt-9 sm:pt-0 space-y-6">
                 <% users.forEach(user => { %>
                     <div class="bg-white shadow-lg rounded-lg p-4 user-card">
-                        <div class="grid md:grid-cols-[2rem_3rem_auto_1fr_auto_1fr_1fr_auto_auto] gap-3 items-center">
+                        <div class="grid md:grid-cols-[2rem_3rem_auto_1fr_auto_1fr_1fr_auto_auto_auto] gap-3 items-center">
                             <div class="text-gray-500 font-mono">#<%= user.id %></div>
                             <img src="<%= user.avatar || '/uploads/default-avatar-hq.png' %>" alt="avatar" class="w-12 h-12 rounded border">
                             <form action="/admin/user/update/<%= user.id %>" method="POST" class="contents">
@@ -93,7 +95,7 @@
                             </form>
                             <form action="/admin/user/delete/<%= user.id %>" method="POST" onsubmit="return confirm('Удалить пользователя?')">
                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                <button class="text-red-500 text-lg hover:text-red-700 cursor-pointer">🗑️</button>
+                                <button class="bg-red-500 text-lg px-3 py-2 rounded hover:bg-red-600 cursor-pointer">🗑️</button>
                             </form>
                         </div>
                     </div>
@@ -103,7 +105,7 @@
 
         <!-- Раздел с проектами -->
         <div id="tab-projects" class="tab-content hidden space-y-6">
-            <div class="flex gap-3 justify-start h-10">
+            <div class="flex flex-col sm:flex-row gap-2 justify-start h-10">
                 <input type="text" id="projectSearchInput" placeholder="Поиск пользователей..."
                        class="border px-3 py-2 rounded w-64" />
             </div>
@@ -111,7 +113,7 @@
             <div id="projectList" class="space-y-6">
                 <% projects.forEach(project => { %>
                     <div class="bg-white shadow-lg rounded-lg p-4 mb-4 space-y-2 project-card">
-                        <div class="grid md:grid-cols-[2rem_auto_1fr_auto_1fr_auto_auto] gap-3 items-center">
+                        <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[2rem_auto_1fr_auto_1fr_auto_auto] gap-3 items-center">
                             <form action="/admin/project/update/<%= project.id %>" method="POST" class="contents">
                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                 <div class="text-gray-600 font-mono">#<%= project.id %></div>
@@ -123,7 +125,7 @@
                             </form>
                             <form action="/admin/project/delete/<%= project.id %>" method="POST" onsubmit="return confirm('Удалить проект?')">
                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                <button class="text-red-500 text-lg hover:text-red-700 cursor-pointer">🗑️</button>
+                                <button class="bg-red-500 text-lg px-3 py-2 rounded hover:bg-red-600 cursor-pointer">🗑️</button>
                             </form>
                         </div>
                     </div>
@@ -155,8 +157,6 @@
                 <label class="text-gray-600 ml-2">По:
                     <input type="date" name="date_to" value="<%= query.date_to || '' %>" class="border rounded p-1 ml-1" />
                 </label>
-
-                <!--<button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Фильтровать</button>-->
             </form>
 
             <div class="bg-white p-6 rounded shadow-lg max-h-[700px] overflow-y-auto text-sm text-gray-700 space-y-2">
@@ -172,79 +172,54 @@
         </div>
 
         <!-- Таблица с командой -->
-        <div id="tab-team" class="tab-content hidden flex flex-row gap-3">
-            <div id="admin-panel" class="flex flex-col w-2/4 gap-3">
-                <div id="admin-chat" class="bg-white rounded-lg p-6 shadow-lg flex flex-col h-[500px] overflow-hidden">
-                    <h2 class="text-xl font-semibold mb-4">Админский чат</h2>
-                    <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 pr-2">
-                        <% messages.forEach(message => { %>
-                            <div class="flex <%= message.user_id === currentUser.id ? 'justify-end' : 'justify-start' %>">
-                                <div class="max-w-[70%] mb-3 p-3 rounded-lg shadow-md relative <%= message.user_id === currentUser.id ? 'bg-blue-100' : 'bg-gray-100' %>">
-                                    <div class="flex items-center justify-between mb-1 gap-3">
-                                        <div class="flex items-center gap-2">
-                                            <img src="<%= message.avatar || '/uploads/default-avatar-hq.png' %>" class="w-6 h-6 rounded-full">
-                                            <span class="font-semibold text-sm"><%= message.username %></span>
-                                        </div>
-                                        <% if (message.user_id === currentUser.id) { %>
-                                            <div class="flex gap-2 text-xs text-blue-500">
-                                                <button type="button" onclick="openEditModal(<%= message.id %>, `<%- message.text.replace(/`/g, '\\`') %>`)">✏️</button>
-                                                <form action="/admin/chat/delete/<%= message.id %>" method="POST" onsubmit="return confirm('Удалить сообщение?')">
-                                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                                    <button type="submit">🗑️</button>
-                                                </form>
-                                            </div>
-                                        <% } %>
+        <div id="tab-team" class="tab-content hidden grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
+            <div id="admin-chat" class="bg-white rounded-lg p-6 shadow-lg flex flex-col h-[500px] overflow-hidden w-full">
+                <h2 class="text-xl font-semibold mb-4">Админский чат</h2>
+                <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 pr-2">
+                    <% messages.forEach(message => { %>
+                        <div class="flex <%= message.user_id === currentUser.id ? 'justify-end' : 'justify-start' %>">
+                            <div class="max-w-[70%] mb-3 p-3 rounded-lg shadow-md relative <%= message.user_id === currentUser.id ? 'bg-blue-100' : 'bg-gray-100' %>">
+                                <div class="flex items-center justify-between mb-1 gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <img src="<%= message.avatar || '/uploads/default-avatar-hq.png' %>" class="w-6 h-6 rounded-full">
+                                        <span class="font-semibold text-sm"><%= message.username %></span>
                                     </div>
-                                    <p class="text-sm" name="text">
-                                        <%= message.text %>
-                                        <% if (message.edited) { %><span class="text-xs text-gray-500 ml-2">(изменено)</span><% } %>
-                                    </p>
-
-                                    <p class="text-xs text-gray-500 mt-1 text-right">
-                                        <%= new Date(message.created_at).toLocaleString('ru-RU', {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                            day: '2-digit',
-                                            month: 'short'
-                                        }) %>
-                                    </p>
+                                    <% if (message.user_id === currentUser.id) { %>
+                                        <div class="flex gap-2 text-xs text-blue-500">
+                                            <button type="button" onclick="openEditModal(<%= message.id %>, `<%- message.text.replace(/`/g, '\\`') %>`)">✏️</button>
+                                            <form action="/admin/chat/delete/<%= message.id %>" method="POST" onsubmit="return confirm('Удалить сообщение?')">
+                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                                <button type="submit">🗑️</button>
+                                            </form>
+                                        </div>
+                                    <% } %>
                                 </div>
-                            </div>
-                        <% }) %>
-                    </div>
+                                <p class="text-sm" name="text">
+                                    <%= message.text %>
+                                    <% if (message.edited) { %><span class="text-xs text-gray-500 ml-2">(изменено)</span><% } %>
+                                </p>
 
-                    <form action="/admin/chat/send" method="POST" class="mt-4 flex gap-3">
-                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <input name="text" required class="border rounded px-3 py-2 flex-1" placeholder="Введите сообщение..." autocomplete="off">
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600">📤</button>
-                    </form>
-                </div>
-
-                <div id="admin-task-view" class="bg-white rounded-lg p-6 shadow-lg space-y-4">
-                    <h2 class="text-xl font-semibold">Задачи по администраторам</h2>
-                    <% admins.forEach(admin => { %>
-                        <div class="border rounded p-2 border-gray-300">
-                            <div class="flex items-center justify-between cursor-pointer" onclick="toggleTasks('<%= admin.id %>')">
-                                <div class="flex items-center gap-3">
-                                    <img src="<%= admin.avatar || '/uploads/default-avatar-hq.png' %>" alt="avatar" class="w-10 h-10 rounded-full">
-                                    <span class="font-semibold"><%= admin.name %></span>
-                                </div>
-                                <span class="text-gray-400 text-sm">▼</span>
+                                <p class="text-xs text-gray-500 mt-1 text-right">
+                                    <%= new Date(message.created_at).toLocaleString('ru-RU', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        day: '2-digit',
+                                        month: 'short'
+                                    }) %>
+                                </p>
                             </div>
-                            <ul id="tasks-for-<%= admin.id %>" class="ml-12 mt-3 hidden list-disc text-gray-700">
-                                <% (adminTodoMap[admin.id] || []).forEach(task => { %>
-                                    <li><%= task.text %> <% if (task.completed) { %><span class="text-green-500">(выполнено)</span><% } %></li>
-                                <% }) %>
-                                <% if (!(adminTodoMap[admin.id] || []).length) { %>
-                                    <li class="text-gray-400 italic">Нет задач</li>
-                                <% } %>
-                            </ul>
                         </div>
                     <% }) %>
                 </div>
+
+                <form action="/admin/chat/send" method="POST" class="mt-4 flex gap-3">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input name="text" required class="border rounded px-3 py-2 flex-1" placeholder="Введите сообщение..." autocomplete="off">
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-600">📤</button>
+                </form>
             </div>
 
-            <div id="todo-section" class="bg-white rounded-lg p-6 shadow-lg space-y-4 w-2/4">
+            <div id="todo-section" class="bg-white rounded-lg p-6 shadow-lg space-y-4 w-full">
                 <h2 class="text-xl font-bold text-gray-800">To-Do List</h2>
 
                 <form action="/admin/todo/create" method="POST" class="flex gap-3">
@@ -258,8 +233,8 @@
                         <p class="text-gray-500">Нет задач</p>
                     <% } else { %>
                         <% todos.forEach((todo, index) => { %>
-                            <div class="flex items-center justify-between bg-white p-3 rounded shadow mb-2">
-                                <div class="flex items-center space-x-2">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white p-3 rounded shadow mb-2 gap-2">
+                                <div class="flex flex-wrap gap-2 sm:flex-nowrap sm:space-x-2 overflow-x-auto">
                                     <form action="/admin/todo/toggle/<%= todo.id %>" method="POST">
                                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                         <button class="cursor-pointer"><%= todo.completed ? '✅' : '⬜' %></button>
@@ -270,7 +245,7 @@
                                         <form action="/admin/todo/update/<%= todo.id %>" method="POST" class="task-edit-form hidden flex items-center gap-2" onsubmit="return validateEditForm(this)">
                                             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                             <input name="text" value="<%= todo.text %>" class="border px-2 py-1 rounded w-60">
-                                            <button class="bg-blue-500 text-white px-2 py-1 rounded cursor-pointer">💾</button>
+                                            <button class="text-sm px-2 py-1 bg-blue-500 text-white rounded whitespace-nowrap">💾</button>
                                         </form>
 
                                         <button type="button" class="edit-btn cursor-pointer" onclick="toggleEditForm(this)">✏️</button>
@@ -322,6 +297,29 @@
                         <% }) %>
                     <% } %>
                 </ul>
+            </div>
+
+            <div id="admin-task-view" class="bg-white rounded-lg p-6 shadow-lg space-y-4 w-full">
+                <h2 class="text-xl font-semibold">Задачи по администраторам</h2>
+                <% admins.forEach(admin => { %>
+                    <div class="border rounded p-2 border-gray-300">
+                        <div class="flex items-center justify-between cursor-pointer" onclick="toggleTasks('<%= admin.id %>')">
+                            <div class="flex items-center gap-3">
+                                <img src="<%= admin.avatar || '/uploads/default-avatar-hq.png' %>" alt="avatar" class="w-10 h-10 rounded-full">
+                                <span class="font-semibold"><%= admin.name %></span>
+                            </div>
+                            <span class="text-gray-400 text-sm">▼</span>
+                        </div>
+                        <ul id="tasks-for-<%= admin.id %>" class="ml-12 mt-3 hidden list-disc text-gray-700">
+                            <% (adminTodoMap[admin.id] || []).forEach(task => { %>
+                                <li><%= task.text %> <% if (task.completed) { %><span class="text-green-500">(выполнено)</span><% } %></li>
+                            <% }) %>
+                            <% if (!(adminTodoMap[admin.id] || []).length) { %>
+                                <li class="text-gray-400 italic">Нет задач</li>
+                            <% } %>
+                        </ul>
+                    </div>
+                <% }) %>
             </div>
         </div>
     </main>

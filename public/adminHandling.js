@@ -1,3 +1,32 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleBtn = document.getElementById('toggleSidebar');
+    const sidebar = document.getElementById('sidebar');
+
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        if (!sidebar.classList.contains('-translate-x-full')) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+
+    let startX = 0;
+    let endX = 0;
+
+    document.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+    });
+
+    document.addEventListener('touchend', (e) => {
+        endX = e.changedTouches[0].clientX;
+
+        if (endX - startX > 100) {
+            sidebar.classList.remove('-translate-x-full');
+        } else if (startX - endX > 100) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+});
+
 document.getElementById('userSearchInput').addEventListener('input', function () {
     const query = this.value.toLowerCase();
     const userCards = document.querySelectorAll('.user-card');
