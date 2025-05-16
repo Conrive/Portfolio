@@ -86,10 +86,30 @@
 
             div.innerHTML = `
                 <div class="inset-0 bg-white/85 p-8 flex flex-col justify-between">
-                <h2 class="text-xl font-semibold mb-2">${project.title}</h2>
-                <p class="text-sm text-gray-600">${project.description || 'Без описания'}</p>
+                    <h2 class="text-xl font-semibold mb-2">${project.title}</h2>
+                    <p class="text-sm text-gray-600">${project.description || 'Без описания'}</p>
+                    <div class="flex items-center justify-between mt-4">
+                        <a href="${ project.link }" class="text-blue-500" target="_blank">Cсылка</a>
+                        <a href="${ isOwner ? `/project/${project.id}/edit-page` : `/project/${project.id}/view` }"
+                            class="project-link text-sm text-blue-600 cursor-pointer ml-4 hover:underline">
+                            Макет
+                        </a>
+                    </div>
                 </div>
             `;
+
+            if (isOwner) {
+                div.innerHTML += `
+                    <div class="mt-2 gap-3 flex flex-col sm:flex-row justify-between space-x-2">
+                        <a href="/projects/edit/${project.id }" class="w-full sm:w-fit bg-yellow-500 text-white text-center px-3 py-1 rounded">Редактировать</a>
+
+                        <form action="/projects/delete/${project.id }" method="POST" onsubmit="return confirm('Удалить проект?');">
+                            <input type="hidden" name="_csrf" value="${ csrfToken }">
+                                <button class="w-full bg-red-500 text-white px-3 py-1 rounded">Удалить</button>
+                        </form>
+                    </div>
+                `;
+            }
 
             if (isOwner) {
                 const favBtn = document.createElement('button');

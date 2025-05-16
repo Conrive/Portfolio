@@ -147,7 +147,7 @@ function formatText(textarea, syntax) {
 
     if (syntax === '[]()') {
         formatted = selected ? `[${selected}](https://)` : `[текст](https://)`;
-        cursorOffset = selected ? formatted.length : 1; // после [текст
+        cursorOffset = selected ? formatted.length : 1;
     } else {
         if (selected) {
             formatted = `${syntax}${selected}${syntax}`;
