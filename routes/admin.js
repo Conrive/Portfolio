@@ -342,7 +342,7 @@ router.post('/chat/edit/:id', checkAdmin, async (req, res) => {
     const message = await dbGet('SELECT * FROM admin_chat_messages WHERE id = ?', [messageId]);
 
     if (!message || message.user_id !== req.session.user.id) {
-        return res.status(403).send('Forbidden');
+        return res.status(403).render('errors/403', { title: '403 - Запрещено' });
     }
 
     await dbRun('UPDATE admin_chat_messages SET text = ?, edited = 1 WHERE id = ?', [text.trim(), messageId]);
@@ -356,7 +356,7 @@ router.post('/chat/delete/:id', checkAdmin, async (req, res) => {
     const message = await dbGet('SELECT * FROM admin_chat_messages WHERE id = ?', [messageId]);
 
     if (!message || message.user_id !== req.session.user.id) {
-        return res.status(403).send('Forbidden');
+        return res.status(403).render('errors/403', { title: '403 - Запрещено' });
     }
 
     await dbRun('DELETE FROM admin_chat_messages WHERE id = ?', [messageId]);

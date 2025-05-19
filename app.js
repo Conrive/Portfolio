@@ -53,7 +53,7 @@ app.use(csrfProtection);
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
     console.warn('Нарушение CSRF-защиты:', req.ip, new Date().toISOString());
-    res.status(403).send('Форма устарела или недействительна. Перезагрузите страницу и попробуйте снова.');
+    res.status(403).render('errors/403', { title: '403 - Запрещено' });
   } else {
     next(err);
   }

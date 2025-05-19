@@ -40,7 +40,7 @@ module.exports = function validateInput(req, res, next) {
 
     for (const [part, data] of Object.entries(partsToScan)) {
         if (scanObject(data, part, req)) {
-            return res.status(400).send('Bad Request: Suspicious input detected');
+            return res.status(400).render('errors/400', { title: '400 - Ошибка запроса' });
         }
     }
 

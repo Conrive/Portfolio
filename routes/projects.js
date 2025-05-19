@@ -22,7 +22,7 @@ router.get('/profile/:id/projects', ensureAuth, (req, res) => {
     const isOwner = viewer && parseInt(viewer) === profileId;
 
     db.all(`SELECT * FROM projects WHERE user_id = ? ORDER BY ${orderBy}`, [profileId], (err, projects) => {
-        if (err) return res.status(500).send('Ошибка загрузки проектов' + err);
+        if (err) return res.status(500).render('errors/500', { title: '500 - Ошибка сервера' });
 
         res.render('userProjects', {
             title: 'Мои проекты',
@@ -216,7 +216,7 @@ router.get('/project/:id/view', (req, res) => {
     const token = req.csrfToken();
     db.get('SELECT * FROM projects WHERE id = ?', [projectId], (err, project) => {
         if (err || !project) {
-            return res.status(404).send("Проект не найден");
+            return res.status(404).render('errors/404', { title: '404 - Не найдено' });
         }
 
         res.render('viewProject', { project, csrfToken: token });
@@ -256,11 +256,11 @@ router.get('/project/:id/edit-page', (req, res) => {
 
     db.get('SELECT * FROM projects WHERE id = ?', [projectId], (err, project) => {
         if (err || !project) {
-            return res.status(404).send("Проект не найден");
+            return res.status(404).render('errors/404', { title: '404 - Не найдено' });
         }
 
         if (!req.session.user || req.session.user.id !== project.user_id) {
-            return res.status(403).send("У вас нет доступа к редактированию этого проекта");
+            return res.status(403).render('errors/403', { title: '403 - Запрещено' });
         }
 
         const token = req.csrfToken();

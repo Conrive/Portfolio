@@ -18,18 +18,18 @@ router.get('/:id', async (req, res) => {
 
     const profileUser = await dbGet('SELECT * FROM users WHERE id = ?', [req.params.id]);
 
-    if (!profileUser) return res.status(404).send('User not found');
+    if (!profileUser) return res.status(404).render('errors/404', { title: '404 - Не найдено' });
 
     const isOwner = req.session.user && req.session.user.id === profileUser.id;
     const isAdmin = req.session.user && req.session.user.role === 2;
 
     if (profileUser.hidden && !isOwner && !isAdmin) {
-        return res.status(403).send('Этот профиль скрыт');
+        return res.status(403).render('errors/403', { title: 'Этот профиль скрыт' });
     }
 
     db.get('SELECT * FROM users WHERE id = ?', [profileId], async (err, user) => {
         if (err || !user) {
-            return res.status(404).send('Пользователь не найден');
+            return res.status(404).render('errors/404', { title: '404 - Не найдено' });
         }
 
         const projects = await getUserProjects(profileId);
@@ -41,7 +41,7 @@ router.get('/:id', async (req, res) => {
             WHERE comments.student_id = ?
             ORDER BY comments.created_at DESC
             `, [profileId], (err2, comments) => {
-            if (err2) return res.status(500).send('Ошибка загрузки комментариев');
+            if (err2) return res.status(500).render('errors/500', { title: '500 - Ошибка сервера' });
 
             const token = req.csrfToken();
             res.render('profile', {
@@ -148,16 +148,16 @@ router.post('/:id/toggle-visibility', ensureAuth, async (req, res) => {
     const profileId = parseInt(req.params.id);
 
     if (isNaN(profileId)) return res.redirect('/');
-    if (currentUser.role !== 2) return res.status(403).send('Недостаточно прав');
+    if (currentUser.role !== 2) return res.status(403).render('errors/403', { title: '403 - Запрещено' });
 
     const userToToggle = await dbGet('SELECT hidden FROM users WHERE id = ?', [profileId]);
-    if (!userToToggle) return res.status(404).send('Пользователь не найден');
+    if (!userToToggle) return res.status(404).render('errors/404', { title: '404 - Не найдено' });
 
     const newHiddenStatus = userToToggle.hidden ? 0 : 1;
     db.run('UPDATE users SET hidden = ? WHERE id = ?', [newHiddenStatus, profileId], (err) => {
         if (err) {
             console.error('Ошибка при изменении скрытости:', err.message);
-            return res.status(500).send('Ошибка при обновлении');
+            return res.status(500).render('errors/500', { title: '500 - Ошибка сервера' });
         }
         res.redirect(`/profile/${profileId}`);
     });
@@ -211,7 +211,7 @@ router.post('/comment/:studentId', ensureAuth, (req, res) => {
     const teacherId = req.session.user.id;
     const role = req.session.user.role;
 
-    if (![2, 3].includes(role)) return res.status(403).send('Недостаточно прав');
+    if (![2, 3].includes(role)) return res.status(403).render('errors/403', { title: '403 - Запрещено' });
 
     if (!content || content.trim().length === 0) {
         return res.redirect(`/profile/${studentId}`);
@@ -221,7 +221,7 @@ router.post('/comment/:studentId', ensureAuth, (req, res) => {
         INSERT INTO comments (student_id, teacher_id, content)
         VALUES (?, ?, ?)
     `, [studentId, teacherId, content.trim()], err => {
-        if (err) return res.status(500).send('Ошибка при добавлении комментария');
+        if (err) return res.status(500).render('errors/500', { title: '500 - Ошибка сервера' });
         res.redirect(`/profile/${studentId}`);
     });
 });
@@ -249,19 +249,19 @@ router.post('/comment/delete/:commentId', ensureAuth, (req, res) => {
     const currentUser = req.session.user;
 
     db.get('SELECT * FROM comments WHERE id = ?', [commentId], (err, comment) => {
-        if (err || !comment) return res.status(404).send('Комментарий не найден');
+        if (err || !comment) return res.status(404).render('errors/404', { title: '404 - Не найдено' });
 
         if (currentUser.role === 2 || currentUser.role === 3) {
             if (currentUser.role === 3 && comment.teacher_id !== currentUser.id) {
-                return res.status(403).send('Нет прав на удаление');
+                return res.status(403).render('errors/403', { title: 'Недостаточно прав' });
             }
 
             db.run('DELETE FROM comments WHERE id = ?', [commentId], err => {
-                if (err) return res.status(500).send('Ошибка при удалении');
+                if (err) return res.status(500).render('errors/500', { title: '500 - Ошибка сервера' });
                 res.redirect(`/profile/${comment.project_id || comment.student_id}`);
             });
         } else {
-            res.status(403).send('Недостаточно прав');
+            res.status(403).render('errors/403', { title: 'Недостаточно прав' });
         }
     });
 });
