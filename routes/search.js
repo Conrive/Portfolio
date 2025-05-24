@@ -36,7 +36,7 @@ router.get('/search', async (req, res) => {
         }
 
         if (users.length === 0 && projects.length === 0) {
-            return res.status(404).render('404', { message: 'Ничего не найдено по вашему запросу.' });
+            return res.status(404).render('search_404', { message: 'Ничего не найдено по вашему запросу.' });
         }
 
         res.render('search', { users, projects, query: q });

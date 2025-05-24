@@ -15,7 +15,7 @@
 
     <!-- Контейнер сайдбара -->
     <aside id="sidebar" class="fixed top-0 md:static transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out w-64 bg-white border-r min-h-screen p-6 space-y-4 z-40">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Админка</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Админ панель</h2>
         <nav class="space-y-2">
             <button onclick="switchTab('stats', event)" class="tab-button w-full text-left px-4 py-2 rounded hover:bg-gray-200">📊 Статистика</button>
             <button onclick="switchTab('users', event)" class="tab-button w-full text-left px-4 py-2 rounded hover:bg-gray-200">👤 Пользователи</button>
@@ -326,7 +326,7 @@
 </div>
 
 <!-- Модальное окно -->
-<div id="userModal" class="fixed inset-0 items-center justify-center z-50 hidden" style="background-color: rgba(0, 0, 0, 0.5);">
+<div id="userModal" class="fixed inset-0 items-center justify-center z-50 hidden bg-black/50">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
         <button onclick="closeUserModal()" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-xl font-bold">×</button>
         <h2 class="text-xl font-semibold mb-4">Создание нового пользователя</h2>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="m-0, p-0, h-full, bg-gray-200">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,29 +7,19 @@
     <link href="/css/output.css" rel="stylesheet">
     <meta name="csrf-token" content="<%= csrfToken %>">
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            background-color: #f0f0f0;
-        }
         #canvas {
-            position: relative;
-            min-width: 800px; /* по ширине проекта */
-            min-height: 600px; /* по высоте проекта */
-            background-color: white; /* если нужно дефолтное значение */
-            background-size: cover;
-            background-repeat: no-repeat;
+            min-width: 800px;
+            min-height: 600px;
         }
     </style>
 </head>
-<body>  <%- include('partials/nav') %>
+<body class="m-0, p-0, h-full, bg-gray-200">  <%- include('partials/nav') %>
 
 <main class="w-full flex flex-col h-fit mt-2">
     <div class="flex w-full items-center justify-center">
         <% if (project.layout) { %>
         <div class="w-full h-fit flex overflow-auto">
-            <div id="canvas" class=""></div>
+            <div id="canvas" class="relative bg-white bg-cover bg-no-repeat"></div>
         </div>
 
         <% } else { %>

@@ -273,7 +273,8 @@ router.get('/project/:id/edit-page', (req, res) => {
 });
 
 router.get('/unsupported-screen', (req, res) => {
-    res.status(400).render('unsupportedScreen', {
+    res.status(400).render('unsupportedScreen',  {
+        title: '404 - Не найдено',
         message: "Ваш текущий размер экрана пока не поддерживается"
     });
 });
@@ -291,20 +292,6 @@ router.post('/delete-upload', (req, res) => {
     const { path } = req.body;
     deleteFileIfExists(path);
     res.json({ success: true });
-});
-
-//Сохранение макета в layuot
-router.post('/project/:id/save', async (req, res) => {
-    const { id } = req.params;
-    const pageData = req.body;
-
-    try {
-        await dbRun('UPDATE projects SET layout = ? WHERE id = ?', [JSON.stringify(pageData), id]);
-        res.json({ success: true });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, error: 'Ошибка сохранения' });
-    }
 });
 
 //Загрузка layout
