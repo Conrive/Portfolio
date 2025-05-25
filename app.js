@@ -13,6 +13,7 @@ const db = require("./models/db");
 const adminRoutes = require('./routes/admin')
 const validateInput = require('./models/validateInput');
 const { promisify } = require('util');
+const dbRun = promisify(db.run.bind(db));
 const dbGet = promisify(db.get.bind(db));
 const csrf = require('csurf');
 const csrfProtection = csrf({ cookie: false });
@@ -42,6 +43,10 @@ app.use(async (req, res, next) => {
   next();
 });
 
+async function logAction(userId, action) {
+  await dbRun('INSERT INTO logs (user_id, action) VALUES (?, ?)', [userId, action]);
+}
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -53,6 +58,7 @@ app.use(csrfProtection);
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
     console.warn('Нарушение CSRF-защиты:', req.ip, new Date().toISOString());
+    logAction('null', `Нарушение CSRF-защиты:, ${req.ip}.`);
     res.status(403).render('errors/403', { title: '403 - Запрещено' });
   } else {
     next(err);

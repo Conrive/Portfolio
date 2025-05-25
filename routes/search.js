@@ -23,14 +23,14 @@ router.get('/search', async (req, res) => {
             const hiddenFilter = userIsAdmin ? '' : 'AND hidden = 0';
 
             users = await dbAll(
-                `SELECT * FROM users WHERE (name LIKE ? COLLATE NOCASE OR bio LIKE ? COLLATE NOCASE) ${hiddenFilter} LIMIT 7`,
+                `SELECT * FROM users WHERE (name LIKE ? COLLATE NOCASE OR bio LIKE ? COLLATE NOCASE) ${hiddenFilter}`,
                 [`%${q}%`, `%${q}%`]
             );
         }
 
         if (!filter || filter === 'projects' || filter === 'all') {
             projects = await dbAll(
-                `SELECT * FROM projects WHERE title LIKE ? COLLATE NOCASE OR description LIKE ? COLLATE NOCASE LIMIT 7`,
+                `SELECT * FROM projects WHERE title LIKE ? COLLATE NOCASE OR description LIKE ? COLLATE NOCASE`,
                 [`%${q}%`, `%${q}%`]
             );
         }

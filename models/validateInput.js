@@ -1,6 +1,9 @@
 //Скрипт является системой защиты от SQL, NoSQL и XSS инъекций.
 //Скрипт проверяет все строки текста и блокирует те, что содержат подозрительный ввод.
 //Работает в паре с экранированием <%= %>.
+const { promisify } = require('util');
+const db = require("./db");
+const dbRun = promisify(db.run.bind(db));
 
 const dangerousPatterns = [
     /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,  // XSS script tag
@@ -15,11 +18,16 @@ function isMalicious(value) {
     return dangerousPatterns.some((pattern) => pattern.test(value));
 }
 
+async function logAction(userId, action) {
+    await dbRun('INSERT INTO logs (user_id, action) VALUES (?, ?)', [userId, action]);
+}
+
 function scanObject(obj, label, req) {
     for (const [key, value] of Object.entries(obj || {})) {
         if (typeof value === 'string' && isMalicious(value)) {
             if (label !== 'headers') {
                 console.warn(`[⚠️ Injection detected] ${label} - "${key}": "${value}" from IP ${req.ip}`);
+                logAction(req.session.user.id,`[Injection detected] ${label} - "${key}": "${value}" from IP ${req.ip}. User - ${req.session.user.id}, ${req.session.user.role}.`);
                 return true;
             }
         }

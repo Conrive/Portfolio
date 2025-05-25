@@ -49,8 +49,8 @@ router.get('/', checkAdmin, async (req, res) => {
     let query = `
         SELECT logs.*, users.name as username 
         FROM logs 
-        LEFT JOIN users ON logs.user_id = users.id 
-        WHERE 1=1
+        LEFT JOIN users ON logs.user_id = users.id
+        WHERE true
     `;
     const params = [];
 
