@@ -321,6 +321,16 @@ router.post('/todo/assign', checkAdmin, async (req, res) => {
     res.redirect('/admin');
 });
 
+router.get('/chat/messages', checkAdmin, async (req, res) => {
+    const messages = await dbAll(`
+        SELECT admin_chat_messages.*, users.name as username, users.cover as avatar
+        FROM admin_chat_messages
+        JOIN users ON users.id = admin_chat_messages.user_id
+        ORDER BY admin_chat_messages.created_at ASC
+    `);
+    res.json(messages);
+});
+
 // Отправка сообщения
 router.post('/chat/send', checkAdmin, async (req, res) => {
     const { text } = req.body;
@@ -333,6 +343,19 @@ router.post('/chat/send', checkAdmin, async (req, res) => {
 
     await logAction(req.session.user.id, 'Sent message to admin chat');
     res.redirect('/admin');
+});
+
+router.post('/chat/send-ajax', checkAdmin, async (req, res) => {
+    const { text } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ error: 'Пустое сообщение' });
+
+    await dbRun('INSERT INTO admin_chat_messages (user_id, text) VALUES (?, ?)', [
+        req.session.user.id,
+        text.trim()
+    ]);
+
+    await logAction(req.session.user.id, 'Sent message to admin chat');
+    res.status(200).json({ success: true });
 });
 
 // Редактирование сообщения

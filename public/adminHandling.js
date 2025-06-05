@@ -116,6 +116,89 @@ inputs.forEach(input => {
 const chatMessages = document.getElementById('chat-messages');
 chatMessages.scrollTop = chatMessages.scrollHeight;
 
+document.addEventListener('DOMContentLoaded', () => {
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+    const csrfToken = chatForm.querySelector('input[name="_csrf"]').value;
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        const response = await fetch('/admin/chat/send-ajax', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'CSRF-Token': csrfToken
+            },
+            body: JSON.stringify({ text })
+        });
+
+        if (response.ok) {
+            chatInput.value = '';
+            await fetchMessages(); // Обновить чат сразу
+        }
+    });
+
+    async function fetchMessages() {
+        try {
+            const res = await fetch('/admin/chat/messages');
+            const messages = await res.json();
+            renderMessages(messages);
+        } catch (e) {
+            console.error('Ошибка при загрузке чата:', e);
+        }
+    }
+
+    function renderMessages(messages) {
+        const currentUserId = parseInt(chatMessages.dataset.currentUser);
+        chatMessages.innerHTML = messages.map(message => `
+            <div class="flex ${message.user_id === currentUserId ? 'justify-end' : 'justify-start'}">
+                <div class="max-w-[70%] mb-3 p-3 rounded-lg shadow-md relative ${message.user_id === currentUserId ? 'bg-blue-100' : 'bg-gray-100'}">
+                    <div class="flex items-center justify-between mb-1 gap-3">
+                        <div class="flex items-center gap-2">
+                            <img src="${message.avatar || '/uploads/default-avatar-hq.png'}" class="w-6 h-6 rounded-full">
+                            <span class="font-semibold text-sm">${message.username}</span>
+                        </div>
+                        ${message.user_id === currentUserId ? `
+                            <div class="flex gap-2 text-xs text-blue-500">
+                                <button type="button" onclick="openEditModal(${message.id}, \`${message.text.replace(/`/g, '\\`')}\`)">✏️</button>
+                                <form action="/admin/chat/delete/${message.id}" method="POST" onsubmit="return confirm('Удалить сообщение?')">
+                                    <input type="hidden" name="_csrf" value="${csrfToken}">
+                                    <button type="submit">🗑️</button>
+                                </form>
+                            </div>` : ''
+                        }
+                    </div>
+                    <p class="text-sm">${message.text}${message.edited ? '<span class="text-xs text-gray-500 ml-2">(изменено)</span>' : ''}</p>
+                    <p class="text-xs text-gray-500 mt-1 text-right">${new Date(message.created_at).toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}</p>
+                </div>
+            </div>
+        `).join('');
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    setInterval(fetchMessages, 2000);
+    fetchMessages(); // Загрузка при старте
+});
+
+const chatContainer = document.getElementById("chat-container");
+
+let autoScroll = true;
+
+// Проверка, прокручен ли чат вниз
+function isAtBottom() {
+    return chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 10;
+}
+
+// Обработка ручной прокрутки
+chatContainer.addEventListener("scroll", () => {
+    autoScroll = isAtBottom();
+});
+
 function openEditModal(messageId, messageText) {
     const form = document.getElementById('edit-form');
     form.action = `/admin/chat/edit/${messageId}`;
