@@ -65,7 +65,7 @@ app.use((err, req, res, next) => {
   }
 });
 
-
+app.set('trust proxy', true);
 app.set('view engine', 'ejs');
 app.use('/', authRoutes);
 app.use('/', indexRoutes);
