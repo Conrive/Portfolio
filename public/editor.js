@@ -147,7 +147,7 @@ function selectElement(el) {
             </div>
     
             <label class="block text-sm mb-1 mt-3">Шрифт</label>
-            <select onchange="selectedElement.style.fontFamily = this.value">
+            <select class="w-full" onchange="selectedElement.style.fontFamily = this.value">
                 <option value="Arial">Arial</option>
                 <option value="Verdana">Verdana</option>
                 <option value="Georgia">Georgia</option>
