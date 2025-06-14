@@ -22,12 +22,12 @@ require('dotenv').config();
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: new SQLiteStore({ db: 'sessions.db', dir: './db' }),
   cookie: {
     maxAge: 1000 * 60 * 60 * 24,
     httpOnly: true,
-    secure: false, //Поставить true после получения secure в "https://"
+    secure: true, //Поставить true после получения secure в "https://"
     sameSite: 'strict',
   }
 }));
