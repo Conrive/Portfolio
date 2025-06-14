@@ -27,7 +27,7 @@ app.use(session({
   cookie: {
     maxAge: 1000 * 60 * 60 * 24,
     httpOnly: true,
-    secure: true, //Поставить true после получения secure в "https://"
+    secure: false, //Поставить true после получения secure в "https://"
     sameSite: 'strict',
   }
 }));
